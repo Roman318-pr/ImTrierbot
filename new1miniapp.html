@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matrix Duel · Ставки</title>
-    <!-- Telegram Web App SDK -->
+    <title>Rolls · PvP Рулетка</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
@@ -15,273 +14,24 @@
         }
 
         body {
-            background-color: #000000;
+            background-color: #0a0a0a;
+            color: #ffffff;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            color: #ffffff;
-            position: relative;
-            padding-bottom: 90px;
-        }
-
-        /* Верхняя панель с двумя кнопками */
-        .top-actions {
-            padding: 16px;
-            display: flex;
-            gap: 12px;
-            border-bottom: 1px solid #333333;
-            background-color: #000000;
-            z-index: 5;
-        }
-
-        .btn {
-            flex: 1;
-            height: 52px;
-            border-radius: 30px;
-            font-weight: 600;
-            font-size: 16px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn:active {
-            transform: scale(0.97);
-        }
-
-        .btn-yellow {
-            background-color: #ffd700;
-            color: #000000;
-            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
-        }
-
-        .btn-blue {
-            background-color: #2563eb;
-            color: #ffffff;
-            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
-        }
-
-        /* Контейнер для круга (над кнопками) */
-        .wheel-section {
-            padding: 20px 16px 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background: linear-gradient(to bottom, #000000, #0a0a0a);
-            border-bottom: 1px solid #333333;
-        }
-
-        .wheel-container {
-            position: relative;
-            width: 280px;
-            height: 280px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* Большой круг (рулетка) */
-        .big-wheel {
-            width: 260px;
-            height: 260px;
-            border-radius: 50%;
-            background: conic-gradient(
-                from 0deg,
-                #ff4444 0deg,
-                #ff4444 0deg,
-                #44ff44 0deg,
-                #44ff44 360deg
-            );
-            position: relative;
-            box-shadow: 0 0 30px rgba(255, 68, 68, 0.2);
-            transition: transform 3s cubic-bezier(0.25, 0.1, 0.15, 1);
-            transform: rotate(0deg);
-            will-change: transform;
-            border: 2px solid #333333;
-        }
-
-        /* Маленький круг (таймер) */
-        .small-timer {
-            position: absolute;
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            background: #111111;
-            border: 3px solid #333333;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(4px);
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        .timer-value {
-            font-size: 32px;
-            font-weight: 700;
-            color: #ffd700;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-            line-height: 1;
-        }
-
-        .timer-label {
-            font-size: 10px;
-            color: #888888;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        /* Информация о ставках */
-        .bets-info {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            max-width: 280px;
-            margin-top: 15px;
-            background: #111111;
-            border-radius: 30px;
-            padding: 8px 16px;
-            border: 1px solid #333333;
-        }
-
-        .bet-player {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            flex: 1;
-        }
-
-        .bet-player.red .bet-value {
-            color: #ff4444;
-        }
-
-        .bet-player.green .bet-value {
-            color: #44ff44;
-        }
-
-        .bet-label {
-            font-size: 12px;
-            color: #888888;
-        }
-
-        .bet-value {
-            font-size: 18px;
-            font-weight: 700;
-        }
-
-        .bet-percent {
-            font-size: 12px;
-            color: #888888;
-        }
-
-        /* Панель ставок */
-        .bet-panel {
-            padding: 16px;
-            background: #0a0a0a;
-            border-top: 1px solid #333333;
-            border-bottom: 1px solid #333333;
-        }
-
-        .bet-input-group {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .bet-input {
-            flex: 1;
-            background: #1a1a1a;
-            border: 1px solid #333333;
-            border-radius: 20px;
-            padding: 12px 16px;
-            color: #ffffff;
-            font-size: 16px;
-            outline: none;
-        }
-
-        .bet-input:focus {
-            border-color: #ffd700;
-        }
-
-        .bet-buttons {
-            display: flex;
-            gap: 8px;
-        }
-
-        .bet-amount-btn {
-            background: #1a1a1a;
-            border: 1px solid #333333;
-            border-radius: 20px;
-            padding: 8px 16px;
-            color: #ffffff;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .bet-amount-btn:active {
-            background: #2a2a2a;
-            border-color: #ffd700;
-        }
-
-        .bet-amount-btn.active {
-            background: #ffd700;
-            color: #000000;
-            border-color: #ffd700;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 12px;
-        }
-
-        .action-btn {
-            flex: 1;
-            padding: 14px;
-            border-radius: 30px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .action-btn:active {
-            transform: scale(0.97);
-        }
-
-        .action-btn-red {
-            background: #ff4444;
-            color: white;
-            box-shadow: 0 4px 15px rgba(255, 68, 68, 0.3);
-        }
-
-        .action-btn-green {
-            background: #44ff44;
-            color: black;
-            box-shadow: 0 4px 15px rgba(68, 255, 68, 0.3);
-        }
-
-        .action-btn-yellow {
-            background: #ffd700;
-            color: black;
+            padding: 16px 12px 90px;
+            background: linear-gradient(145deg, #0a0a0a 0%, #1a1a1a 100%);
         }
 
         /* Статистика пользователя */
         .user-stats {
-            padding: 16px;
-            background: linear-gradient(145deg, #111111, #1a1a1a);
-            margin: 0 16px 16px;
-            border-radius: 20px;
-            border: 1px solid #333333;
+            background: rgba(20, 20, 20, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
+            border: 1px solid #333333;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
         }
 
         .stat-item {
@@ -295,58 +45,283 @@
         }
 
         .stat-value {
-            font-size: 20px;
+            font-size: 22px;
+            font-weight: 700;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        /* Секция рулетки */
+        .roulette-section {
+            background: #111111;
+            border-radius: 40px;
+            padding: 24px 16px;
+            margin-bottom: 20px;
+            border: 1px solid #333333;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.7);
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 260px;
+            height: 260px;
+            margin: 0 auto 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Основное колесо */
+        .wheel {
+            width: 240px;
+            height: 240px;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                #ff4444 0deg,
+                #ff4444 120deg,
+                #44ff44 120deg,
+                #44ff44 240deg,
+                #4444ff 240deg,
+                #4444ff 360deg
+            );
+            position: relative;
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.2);
+            transition: transform 4s cubic-bezier(0.25, 0.1, 0.15, 1);
+            transform: rotate(0deg);
+            will-change: transform;
+            border: 3px solid #333;
+        }
+
+        /* Стрелка-указатель */
+        .arrow {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid #ffd700;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+            z-index: 20;
+        }
+
+        /* Центральный круг с таймером */
+        .center-timer {
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: #1a1a1a;
+            border: 3px solid #ffd700;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 15;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+            backdrop-filter: blur(4px);
+        }
+
+        .timer-value {
+            font-size: 36px;
+            font-weight: 800;
+            color: #ffd700;
+            line-height: 1;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+        }
+
+        .timer-label {
+            font-size: 10px;
+            color: #cccccc;
+            letter-spacing: 1px;
+        }
+
+        /* Информация о раунде */
+        .round-info {
+            display: flex;
+            justify-content: space-between;
+            background: #1e1e1e;
+            border-radius: 50px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+        }
+
+        .players-count {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .players-icon {
+            font-size: 24px;
+        }
+
+        .players-text {
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .pool-amount {
+            font-size: 22px;
             font-weight: 700;
             color: #ffd700;
         }
 
-        /* Сетка с карточками */
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+        /* Список игроков в раунде */
+        .players-list {
+            background: #1a1a1a;
+            border-radius: 30px;
             padding: 16px;
-            flex: 1;
+            margin-bottom: 20px;
+            border: 1px solid #333;
         }
 
-        .card {
-            background-color: #1a1a1a;
-            border-radius: 20px;
-            padding: 16px;
-            min-height: 140px;
+        .players-title {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #ffd700;
             display: flex;
-            flex-direction: column;
-            border: 1px solid #333333;
-            transition: all 0.2s ease;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .player-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: #252525;
+            border-radius: 20px;
+            margin-bottom: 8px;
+            border-left: 4px solid #ffd700;
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .player-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .player-name {
+            font-weight: 500;
+        }
+
+        .player-bet {
+            font-size: 18px;
+            font-weight: 700;
+            color: #ffd700;
+        }
+
+        .win-chance {
+            font-size: 14px;
+            color: #4caf50;
+        }
+
+        /* Панель ставок */
+        .bet-panel {
+            background: #1e1e1e;
+            border-radius: 40px;
+            padding: 20px;
+            border: 1px solid #333;
+        }
+
+        .gifts-selector {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px 0 20px;
+            scrollbar-width: none;
+        }
+
+        .gift-card {
+            min-width: 90px;
+            background: #2a2a2a;
+            border-radius: 25px;
+            padding: 15px 8px;
+            text-align: center;
+            border: 2px solid #444;
+            transition: all 0.2s;
             cursor: pointer;
         }
 
-        .card:active {
-            transform: scale(0.98);
-            border-color: #ffffff;
+        .gift-card.selected {
+            border-color: #ffd700;
+            background: #333;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
         }
 
-        .card-badge {
-            color: #888888;
-            font-size: 12px;
-            margin-bottom: 8px;
+        .gift-emoji {
+            font-size: 36px;
+            margin-bottom: 5px;
         }
 
-        .card-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .card-subtitle {
-            color: #888888;
-            font-size: 12px;
-        }
-
-        .card-value {
-            font-size: 24px;
+        .gift-value {
+            font-size: 18px;
             font-weight: 700;
-            margin-top: auto;
+            color: #ffd700;
+        }
+
+        .gift-label {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background: #ffd700;
+            color: #000;
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background: #2a2a2a;
+            color: #fff;
+            border: 1px solid #444;
+        }
+
+        .btn-success {
+            background: #4caf50;
+            color: white;
         }
 
         /* Нижняя навигация */
@@ -355,8 +330,8 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background-color: #111111;
-            border-top: 1px solid #333333;
+            background: #111111;
+            border-top: 1px solid #333;
             display: flex;
             justify-content: space-around;
             padding: 12px 8px;
@@ -372,13 +347,17 @@
             border: none;
             cursor: pointer;
             padding: 8px 12px;
-            border-radius: 12px;
-            transition: all 0.2s ease;
-            min-width: 60px;
+            border-radius: 20px;
+            color: #888;
+            transition: all 0.2s;
         }
 
-        .nav-item:active {
-            background-color: #2a2a2a;
+        .nav-item.active {
+            color: #ffd700;
+        }
+
+        .nav-item.active .nav-label {
+            color: #ffd700;
         }
 
         .nav-icon {
@@ -387,17 +366,11 @@
         }
 
         .nav-label {
-            font-size: 12px;
-            color: #888888;
-            font-weight: 500;
-            transition: color 0.2s ease;
+            font-size: 11px;
+            color: #888;
         }
 
-        .nav-item.active .nav-label {
-            color: #ffffff;
-        }
-
-        /* Модальные окна (оставляем как в вашем прошлом коде) */
+        /* Модальное окно результатов */
         .modal {
             display: none;
             position: fixed;
@@ -405,167 +378,133 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: rgba(0, 0, 0, 0.95);
+            background: rgba(0, 0, 0, 0.95);
             z-index: 2000;
             padding: 20px;
-            overflow-y: auto;
+            align-items: center;
+            justify-content: center;
         }
 
         .modal.active {
-            display: block;
+            display: flex;
         }
 
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .modal-content {
+            background: #1a1a1a;
+            border-radius: 40px;
+            padding: 30px;
+            max-width: 320px;
+            width: 100%;
+            border: 1px solid #ffd700;
+            text-align: center;
+        }
+
+        .winner-emoji {
+            font-size: 72px;
             margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #333333;
         }
 
-        .modal-title {
+        .winner-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 15px;
+        }
+
+        .winner-prize {
             font-size: 24px;
-            font-weight: 700;
             color: #ffd700;
+            margin-bottom: 25px;
         }
 
-        .modal-close {
-            background: none;
+        .modal-btn {
+            background: #ffd700;
+            color: black;
             border: none;
-            color: #888888;
-            font-size: 24px;
+            padding: 16px 30px;
+            border-radius: 40px;
+            font-weight: 700;
+            width: 100%;
             cursor: pointer;
-            padding: 8px;
-        }
-
-        .modal-close:active {
-            color: #ffffff;
-        }
-
-        .action-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-top: 16px;
-        }
-
-        .action-button {
-            background-color: #1a1a1a;
-            border: 1px solid #333333;
-            border-radius: 16px;
-            padding: 20px 12px;
-            color: #ffffff;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .action-button:active {
-            background-color: #2a2a2a;
-            border-color: #ffd700;
-            transform: scale(0.98);
-        }
-
-        .action-emoji {
-            font-size: 32px;
         }
     </style>
 </head>
 <body>
-    <!-- Telegram WebApp инициализация -->
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
-        tg.setHeaderColor('#000000');
-        tg.setBackgroundColor('#000000');
+        tg.setHeaderColor('#0a0a0a');
+        tg.setBackgroundColor('#0a0a0a');
     </script>
-
-    <!-- Верхние кнопки действия (Желтая и Синяя) -->
-    <div class="top-actions">
-        <button class="btn btn-yellow" id="addToPvpBtn">➕ Добавить в ПвП</button>
-        <button class="btn btn-blue" id="tenTonBtn">⚡ 10 тон</button>
-    </div>
-
-    <!-- Секция с кругом (НАД кнопками, но визуально после них в потоке) -->
-    <div class="wheel-section">
-        <div class="wheel-container">
-            <div class="big-wheel" id="bigWheel"></div>
-            <div class="small-timer">
-                <span class="timer-value" id="timerDisplay">15</span>
-                <span class="timer-label">секунд</span>
-            </div>
-        </div>
-
-        <!-- Информация о текущих ставках -->
-        <div class="bets-info">
-            <div class="bet-player red" id="redBetInfo">
-                <span class="bet-label">Красный</span>
-                <span class="bet-value" id="redBetAmount">0</span>
-                <span class="bet-percent" id="redBetPercent">0%</span>
-            </div>
-            <div class="bet-player green" id="greenBetInfo">
-                <span class="bet-label">Зеленый</span>
-                <span class="bet-value" id="greenBetAmount">0</span>
-                <span class="bet-percent" id="greenBetPercent">0%</span>
-            </div>
-        </div>
-
-        <!-- Панель для ставок -->
-        <div class="bet-panel">
-            <div class="bet-input-group">
-                <input type="number" class="bet-input" id="betAmount" placeholder="Сумма ставки" min="1" value="10">
-                <div class="bet-buttons">
-                    <button class="bet-amount-btn" data-amount="10">10</button>
-                    <button class="bet-amount-btn" data-amount="50">50</button>
-                    <button class="bet-amount-btn" data-amount="100">100</button>
-                </div>
-            </div>
-            <div class="action-buttons">
-                <button class="action-btn action-btn-red" id="betRedBtn">🔴 Ставка на красный</button>
-                <button class="action-btn action-btn-green" id="betGreenBtn">🟢 Ставка на зеленый</button>
-            </div>
-            <button class="action-btn action-btn-yellow" id="resetBetBtn" style="margin-top: 10px;">🔄 Сброс ставок</button>
-        </div>
-    </div>
 
     <!-- Статистика пользователя -->
     <div class="user-stats">
         <div class="stat-item">
             <div class="stat-label">Баланс</div>
-            <div class="stat-value" id="balance">2,500</div>
+            <div class="stat-value" id="balance">⭐ 2,500</div>
         </div>
         <div class="stat-item">
-            <div class="stat-label">Уровень</div>
-            <div class="stat-value" id="level">42</div>
+            <div class="stat-label">Побед</div>
+            <div class="stat-value" id="wins">47</div>
         </div>
         <div class="stat-item">
-            <div class="stat-label">Рейтинг</div>
-            <div class="stat-value" id="rating">1,280</div>
+            <div class="stat-label">Винрейт</div>
+            <div class="stat-value" id="winrate">68%</div>
         </div>
     </div>
 
-    <!-- Сетка с карточками -->
-    <div class="grid-container" id="mainContent"></div>
+    <!-- Основная секция рулетки -->
+    <div class="roulette-section">
+        <div class="wheel-container">
+            <div class="arrow"></div>
+            <div class="wheel" id="wheel"></div>
+            <div class="center-timer">
+                <span class="timer-value" id="timer">2:30</span>
+                <span class="timer-label">осталось</span>
+            </div>
+        </div>
+
+        <!-- Информация о раунде -->
+        <div class="round-info">
+            <div class="players-count">
+                <span class="players-icon">👥</span>
+                <span class="players-text" id="playersCount">3/10 игроков</span>
+            </div>
+            <div class="pool-amount" id="poolAmount">⭐ 45</div>
+        </div>
+
+        <!-- Список игроков -->
+        <div class="players-list">
+            <div class="players-title">
+                <span>⚔️</span> Участники раунда
+            </div>
+            <div id="playersContainer">
+                <!-- Динамически добавляются игроки -->
+            </div>
+        </div>
+
+        <!-- Панель ставок -->
+        <div class="bet-panel">
+            <div class="gifts-selector" id="giftsSelector">
+                <!-- Подарки генерируются JS -->
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="joinRoundBtn">🎁 Войти в раунд</button>
+                <button class="btn btn-secondary" id="createPrivateBtn">🔒 Приватный</button>
+            </div>
+            <button class="btn btn-success" id="quickBetBtn" style="margin-top: 10px;">⚡ Быстрая ставка (⭐10)</button>
+        </div>
+    </div>
 
     <!-- Нижняя навигация -->
-    <div class="bottom-nav" id="bottomNav">
-        <button class="nav-item" data-tab="pvp">
+    <div class="bottom-nav">
+        <button class="nav-item active" data-tab="pvp">
             <span class="nav-icon">⚔️</span>
-            <span class="nav-label">ПвП</span>
+            <span class="nav-label">PvP</span>
         </button>
         <button class="nav-item" data-tab="solo">
             <span class="nav-icon">🎮</span>
             <span class="nav-label">Соло</span>
-        </button>
-        <button class="nav-item" data-tab="draws">
-            <span class="nav-icon">🎲</span>
-            <span class="nav-label">Розыгрыши</span>
         </button>
         <button class="nav-item" data-tab="shop">
             <span class="nav-icon">🛒</span>
@@ -577,378 +516,317 @@
         </button>
     </div>
 
-    <!-- Модальные окна (сократил для читаемости, но они работают) -->
-    <div class="modal" id="resultModal">
-        <div class="modal-header">
-            <div class="modal-title">Результат</div>
-            <button class="modal-close" onclick="closeModal('resultModal')">✕</button>
+    <!-- Модальное окно победителя -->
+    <div class="modal" id="winnerModal">
+        <div class="modal-content">
+            <div class="winner-emoji" id="winnerEmoji">🏆</div>
+            <div class="winner-title" id="winnerName">Вы победили!</div>
+            <div class="winner-prize" id="winnerPrize">⭐ 45</div>
+            <button class="modal-btn" onclick="closeModal()">Отлично!</button>
         </div>
-        <div class="modal-content" id="resultContent"></div>
     </div>
 
     <script>
-        // Состояние приложения
+        // ========== СОСТОЯНИЕ ИГРЫ ==========
         let balance = 2500;
-        let currentTab = 'pvp';
+        let wins = 47;
+        let totalGames = 69;
         
-        // Состояние ставок
-        let redBet = 0;
-        let greenBet = 0;
-        let totalBets = 0;
-        let timerSeconds = 15;
+        // Данные раунда
+        let roundPlayers = [
+            { id: 1, name: 'Вы', avatar: '😎', bet: 15, chance: 33.3 },
+            { id: 2, name: 'CryptoKing', avatar: '👑', bet: 20, chance: 44.4 },
+            { id: 3, name: 'LuckyOne', avatar: '🍀', bet: 10, chance: 22.3 }
+        ];
+        
+        let timerMinutes = 2;
+        let timerSeconds = 30;
         let timerInterval = null;
         let wheelSpinning = false;
         let currentRotation = 0;
-        
-        // Цвета игроков (для истории)
-        let currentWinner = null;
+        let selectedGift = 10; // Выбранная ставка
 
-        // Элементы DOM
-        const bigWheel = document.getElementById('bigWheel');
-        const timerDisplay = document.getElementById('timerDisplay');
-        const redBetAmount = document.getElementById('redBetAmount');
-        const greenBetAmount = document.getElementById('greenBetAmount');
-        const redBetPercent = document.getElementById('redBetPercent');
-        const greenBetPercent = document.getElementById('greenBetPercent');
-        const betInput = document.getElementById('betAmount');
-        const balanceDisplay = document.getElementById('balance');
+        // Доступные подарки [citation:2]
+        const gifts = [
+            { value: 1, emoji: '⭐', label: 'Star', color: '#ffd700' },
+            { value: 5, emoji: '🌟', label: 'Super', color: '#ffaa00' },
+            { value: 10, emoji: '💫', label: 'Mega', color: '#ff7700' },
+            { value: 25, emoji: '✨', label: 'Ultra', color: '#ff44aa' },
+            { value: 50, emoji: '👑', label: 'Royal', color: '#aa44ff' }
+        ];
 
-        // Инициализация Telegram данных
-        const userData = tg.initDataUnsafe?.user || {};
-        
-        // Контент для вкладок
-        const tabContent = {
-            pvp: [
-                { badge: 'АКТИВНЫЙ', title: 'Турнир 3x3', subtitle: 'Награда: 500', value: '🔥 128 игроков' },
-                { badge: 'ДУЭЛЬ', title: 'Ставки на круге', subtitle: 'Удвоение', value: '⚡ Активно' }
-            ],
-            solo: [
-                { badge: 'КАМПАНИЯ', title: 'Глава 5', subtitle: 'Лес теней', value: '🎯 3/5 заданий' },
-                { badge: 'ВЫЗОВ', title: 'Бездна', subtitle: 'Сложность: 50', value: '⏳ 2 попытки' }
-            ],
-            draws: [
-                { badge: 'БЕСПЛАТНО', title: 'Колесо удачи', subtitle: 'Каждые 4ч', value: '🎟️ 5 билетов' }
-            ],
-            shop: [
-                { badge: 'СКИДКА', title: 'Набор новичка', subtitle: '-30%', value: '💰 299' }
-            ],
-            profile: [
-                { badge: 'СТАТИСТИКА', title: 'Всего игр', subtitle: 'Победы/Поражения', value: '324' }
-            ]
-        };
-
-        // Функция обновления круга (проценты)
-        function updateWheel() {
-            totalBets = redBet + greenBet;
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        function init() {
+            updateUI();
+            renderGifts();
+            renderPlayers();
+            startTimer();
             
-            if (totalBets === 0) {
-                // Если ставок нет - серый круг
-                bigWheel.style.background = 'conic-gradient(#333333 0deg, #333333 360deg)';
-                redBetAmount.textContent = '0';
-                greenBetAmount.textContent = '0';
-                redBetPercent.textContent = '0%';
-                greenBetPercent.textContent = '0%';
-                return;
+            // Получаем данные пользователя Telegram
+            const user = tg.initDataUnsafe?.user;
+            if (user) {
+                roundPlayers[0].name = user.first_name || 'Вы';
             }
-
-            const redPercent = (redBet / totalBets) * 100;
-            const greenPercent = (greenBet / totalBets) * 100;
-            
-            // Конвертируем проценты в градусы (1% = 3.6 градуса)
-            const redDegrees = redPercent * 3.6;
-            
-            // Обновляем градиент круга
-            bigWheel.style.background = `conic-gradient(
-                #ff4444 0deg,
-                #ff4444 ${redDegrees}deg,
-                #44ff44 ${redDegrees}deg,
-                #44ff44 360deg
-            )`;
-            
-            // Обновляем текст
-            redBetAmount.textContent = redBet;
-            greenBetAmount.textContent = greenBet;
-            redBetPercent.textContent = `${Math.round(redPercent)}%`;
-            greenBetPercent.textContent = `${Math.round(greenPercent)}%`;
         }
 
-        // Функция обновления баланса
-        function updateBalance(amount) {
-            balance += amount;
-            balanceDisplay.textContent = balance.toLocaleString();
+        // ========== ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ==========
+        function updateUI() {
+            document.getElementById('balance').textContent = `⭐ ${balance}`;
+            document.getElementById('wins').textContent = wins;
+            document.getElementById('winrate').textContent = Math.round((wins / totalGames) * 100) + '%';
+            document.getElementById('playersCount').textContent = `${roundPlayers.length}/10 игроков`;
+            
+            // Сумма пула [citation:2]
+            const totalPool = roundPlayers.reduce((sum, p) => sum + p.bet, 0);
+            document.getElementById('poolAmount').textContent = `⭐ ${totalPool}`;
         }
 
-        // Функция запуска таймера
+        // ========== ОТОБРАЖЕНИЕ ПОДАРКОВ ==========
+        function renderGifts() {
+            const container = document.getElementById('giftsSelector');
+            container.innerHTML = '';
+            
+            gifts.forEach(gift => {
+                const card = document.createElement('div');
+                card.className = `gift-card ${gift.value === selectedGift ? 'selected' : ''}`;
+                card.onclick = () => {
+                    selectedGift = gift.value;
+                    document.querySelectorAll('.gift-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                };
+                
+                card.innerHTML = `
+                    <div class="gift-emoji">${gift.emoji}</div>
+                    <div class="gift-value">⭐${gift.value}</div>
+                    <div class="gift-label">${gift.label}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // ========== ОТОБРАЖЕНИЕ ИГРОКОВ ==========
+        function renderPlayers() {
+            const container = document.getElementById('playersContainer');
+            container.innerHTML = '';
+            
+            roundPlayers.sort((a, b) => b.bet - a.bet).forEach(player => {
+                const playerEl = document.createElement('div');
+                playerEl.className = 'player-item';
+                
+                // Шанс победы пропорционален ставке [citation:2]
+                const total = roundPlayers.reduce((sum, p) => sum + p.bet, 0);
+                const chance = ((player.bet / total) * 100).toFixed(1);
+                
+                playerEl.innerHTML = `
+                    <div class="player-info">
+                        <div class="player-avatar">${player.avatar}</div>
+                        <div>
+                            <div class="player-name">${player.name}</div>
+                            <div class="win-chance">🎯 шанс ${chance}%</div>
+                        </div>
+                    </div>
+                    <div class="player-bet">⭐${player.bet}</div>
+                `;
+                container.appendChild(playerEl);
+            });
+        }
+
+        // ========== ТАЙМЕР РАУНДА (3 минуты) [citation:2] ==========
         function startTimer() {
             if (timerInterval) clearInterval(timerInterval);
-            if (wheelSpinning) return;
-            
-            timerSeconds = 15;
-            timerDisplay.textContent = timerSeconds;
             
             timerInterval = setInterval(() => {
-                timerSeconds--;
-                timerDisplay.textContent = timerSeconds;
-                
-                // Мигание красным при остатке 3 секунды
-                if (timerSeconds <= 3) {
-                    timerDisplay.style.color = '#ff4444';
+                if (timerSeconds <= 0) {
+                    if (timerMinutes <= 0) {
+                        // Время вышло - запускаем розыгрыш
+                        clearInterval(timerInterval);
+                        spinWheel();
+                        return;
+                    } else {
+                        timerMinutes--;
+                        timerSeconds = 59;
+                    }
                 } else {
-                    timerDisplay.style.color = '#ffd700';
+                    timerSeconds--;
                 }
                 
-                if (timerSeconds <= 0) {
-                    clearInterval(timerInterval);
-                    spinWheel();
+                // Обновляем отображение
+                const timeStr = `${timerMinutes}:${timerSeconds.toString().padStart(2, '0')}`;
+                document.getElementById('timer').textContent = timeStr;
+                
+                // Мигание при остатке 30 сек
+                if (timerMinutes === 0 && timerSeconds <= 30) {
+                    document.getElementById('timer').style.color = '#ff4444';
                 }
             }, 1000);
         }
 
-        // Функция вращения колеса
+        // ========== ВРАЩЕНИЕ КОЛЕСА ==========
         function spinWheel() {
-            if (totalBets === 0) {
-                // Если ставок нет, просто перезапускаем таймер
-                startTimer();
+            if (wheelSpinning || roundPlayers.length < 2) {
+                // Если меньше 2 игроков - начинаем новый раунд [citation:2]
+                resetRound();
                 return;
             }
             
             wheelSpinning = true;
             
-            // Рандомный угол остановки (минимум 5 оборотов = 1800 градусов)
-            const spins = 1800 + Math.random() * 720; // 5-7 оборотов
-            const finalAngle = spins;
+            // Рандомный угол (5-8 оборотов)
+            const spins = 1800 + Math.random() * 1080;
+            currentRotation += spins;
             
-            currentRotation += finalAngle;
-            bigWheel.style.transform = `rotate(${currentRotation}deg)`;
+            const wheel = document.getElementById('wheel');
+            wheel.style.transform = `rotate(${currentRotation}deg)`;
             
-            // Определяем победителя после остановки
+            // Определяем победителя через 4 секунды
             setTimeout(() => {
-                // Нормализуем угол до 0-360
-                const normalizedAngle = (currentRotation % 360 + 360) % 360;
-                
-                // Определяем, на какой цвет попала стрелка (0 градусов - верх)
-                // Красный занимает (redBet/totalBets)*360 градусов от 0
-                const redDegrees = (redBet / totalBets) * 360;
-                
+                // Выбираем победителя случайно, но с весом от ставок [citation:2]
+                const total = roundPlayers.reduce((sum, p) => sum + p.bet, 0);
+                let random = Math.random() * total;
                 let winner = null;
-                let winAmount = 0;
                 
-                if (normalizedAngle < redDegrees) {
-                    winner = 'red';
-                    winAmount = redBet * 2; // Удвоение ставки
-                    currentWinner = 'Красный';
-                } else {
-                    winner = 'green';
-                    winAmount = greenBet * 2;
-                    currentWinner = 'Зеленый';
+                for (let player of roundPlayers) {
+                    if (random < player.bet) {
+                        winner = player;
+                        break;
+                    }
+                    random -= player.bet;
                 }
+                
+                if (!winner) winner = roundPlayers[0];
                 
                 // Показываем результат
-                showResult(winner, winAmount);
+                showWinner(winner);
                 
-                // Сбрасываем ставки через 3 секунды
+                // Обновляем статистику
+                if (winner.name === 'Вы' || winner.id === 1) {
+                    wins++;
+                    balance += total;
+                }
+                
+                // Сбрасываем раунд через 3 секунды
                 setTimeout(() => {
-                    redBet = 0;
-                    greenBet = 0;
-                    updateWheel();
-                    wheelSpinning = false;
-                    startTimer();
+                    resetRound();
                 }, 3000);
                 
-            }, 3000); // Ждем окончания анимации
+            }, 4000);
         }
 
-        // Функция показа результата
-        function showResult(winner, amount) {
-            const resultContent = document.getElementById('resultContent');
-            resultContent.innerHTML = `
-                <div style="text-align: center; padding: 20px;">
-                    <div style="font-size: 48px; margin-bottom: 20px;">${winner === 'red' ? '🔴' : '🟢'}</div>
-                    <h2>Победил ${winner === 'red' ? 'Красный' : 'Зеленый'}!</h2>
-                    <p style="font-size: 24px; color: #ffd700; margin: 20px 0;">Выигрыш: ${amount}</p>
-                    <button class="btn btn-yellow" onclick="closeModal('resultModal')" style="width: 100%;">Ок</button>
-                </div>
-            `;
+        // ========== ПОКАЗ ПОБЕДИТЕЛЯ ==========
+        function showWinner(winner) {
+            const total = roundPlayers.reduce((sum, p) => sum + p.bet, 0);
             
-            // Если это наш бот, можно отправить результат
+            document.getElementById('winnerEmoji').textContent = winner.avatar;
+            document.getElementById('winnerName').textContent = 
+                winner.name === 'Вы' ? 'Вы победили! 🎉' : `Победил ${winner.name}!`;
+            document.getElementById('winnerPrize').textContent = `⭐ ${total}`;
+            
+            document.getElementById('winnerModal').classList.add('active');
+            
+            // Отправляем результат в бота
             tg.sendData(JSON.stringify({
-                action: 'duel_result',
-                winner: winner,
-                amount: amount
+                action: 'round_end',
+                winner: winner.name,
+                prize: total
             }));
-            
-            openModal('resultModal');
         }
 
-        // Ставка на красный
-        document.getElementById('betRedBtn').addEventListener('click', () => {
-            if (wheelSpinning) {
-                tg.showAlert('Колесо вращается, подождите...');
+        // ========== СБРОС РАУНДА ==========
+        function resetRound() {
+            timerMinutes = 2;
+            timerSeconds = 30;
+            wheelSpinning = false;
+            
+            // Новые случайные игроки
+            roundPlayers = [
+                { id: 1, name: 'Вы', avatar: '😎', bet: 0 },
+                { id: 2, name: 'Player_' + Math.floor(Math.random() * 1000), avatar: '🎮', bet: Math.floor(Math.random() * 20) + 5 },
+                { id: 3, name: 'Crypto_' + Math.floor(Math.random() * 100), avatar: '💎', bet: Math.floor(Math.random() * 30) + 10 }
+            ];
+            
+            // Если игрок был в раунде, сохраняем его ставку
+            const playerBet = roundPlayers.find(p => p.id === 1).bet;
+            if (playerBet === 0) {
+                roundPlayers[0].bet = selectedGift;
+            }
+            
+            updateUI();
+            renderPlayers();
+            startTimer();
+            
+            document.getElementById('timer').style.color = '#ffd700';
+        }
+
+        // ========== ДЕЙСТВИЯ ИГРОКА ==========
+        document.getElementById('joinRoundBtn').addEventListener('click', () => {
+            if (balance < selectedGift) {
+                tg.showAlert('❌ Недостаточно звезд! [citation:2]');
                 return;
             }
             
-            const amount = parseInt(betInput.value);
-            if (isNaN(amount) || amount <= 0) {
-                tg.showAlert('Введите корректную сумму');
-                return;
+            // Находим игрока "Вы"
+            const player = roundPlayers.find(p => p.id === 1);
+            if (player) {
+                // Возвращаем предыдущую ставку
+                balance += player.bet;
+                player.bet = selectedGift;
+                balance -= selectedGift;
             }
             
-            if (amount > balance) {
-                tg.showAlert('Недостаточно средств');
-                return;
-            }
-            
-            // Снимаем баланс
-            updateBalance(-amount);
-            
-            // Добавляем ставку
-            redBet += amount;
-            updateWheel();
-            
-            // Если это первая ставка в раунде, запускаем таймер
-            if (totalBets === amount && !timerInterval) {
-                startTimer();
-            }
+            updateUI();
+            renderPlayers();
             
             tg.HapticFeedback?.impactOccurred('medium');
+            
+            // Отправляем данные в бота
+            tg.sendData(JSON.stringify({
+                action: 'join_round',
+                bet: selectedGift
+            }));
         });
 
-        // Ставка на зеленый
-        document.getElementById('betGreenBtn').addEventListener('click', () => {
-            if (wheelSpinning) {
-                tg.showAlert('Колесо вращается, подождите...');
-                return;
-            }
-            
-            const amount = parseInt(betInput.value);
-            if (isNaN(amount) || amount <= 0) {
-                tg.showAlert('Введите корректную сумму');
-                return;
-            }
-            
-            if (amount > balance) {
-                tg.showAlert('Недостаточно средств');
-                return;
-            }
-            
-            updateBalance(-amount);
-            greenBet += amount;
-            updateWheel();
-            
-            if (totalBets === amount && !timerInterval) {
-                startTimer();
-            }
-            
-            tg.HapticFeedback?.impactOccurred('medium');
+        document.getElementById('quickBetBtn').addEventListener('click', () => {
+            selectedGift = 10;
+            document.getElementById('joinRoundBtn').click();
         });
 
-        // Кнопки быстрой ставки
-        document.querySelectorAll('.bet-amount-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const amount = e.target.dataset.amount;
-                betInput.value = amount;
-                
-                // Подсветка активной кнопки
-                document.querySelectorAll('.bet-amount-btn').forEach(b => {
-                    b.classList.remove('active');
-                });
-                e.target.classList.add('active');
-            });
-        });
-
-        // Сброс ставок
-        document.getElementById('resetBetBtn').addEventListener('click', () => {
-            if (wheelSpinning) {
-                tg.showAlert('Колесо вращается, нельзя сбросить');
-                return;
-            }
-            
-            // Возвращаем деньги
-            updateBalance(redBet + greenBet);
-            
-            redBet = 0;
-            greenBet = 0;
-            updateWheel();
-            
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-                timerSeconds = 15;
-                timerDisplay.textContent = '15';
-                timerDisplay.style.color = '#ffd700';
-            }
-        });
-
-        // Кнопка "Добавить в ПвП"
-        document.getElementById('addToPvpBtn').addEventListener('click', () => {
+        document.getElementById('createPrivateBtn').addEventListener('click', () => {
             tg.showPopup({
-                title: 'ПвП Дуэль',
-                message: 'Начать дуэль на ставках?',
+                title: 'Приватный раунд',
+                message: 'Создать приватную игру для друзей?',
                 buttons: [
-                    {id: 'start', type: 'default', text: 'Начать'},
+                    {id: 'create', type: 'default', text: 'Создать'},
                     {id: 'cancel', type: 'destructive', text: 'Отмена'}
                 ]
-            }, (buttonId) => {
-                if (buttonId === 'start') {
-                    redBet = 0;
-                    greenBet = 0;
-                    updateWheel();
-                    startTimer();
+            }, (id) => {
+                if (id === 'create') {
+                    tg.showAlert('🔗 Ссылка-приглашение скопирована');
                 }
             });
         });
 
-        // Кнопка "10 тон"
-        document.getElementById('tenTonBtn').addEventListener('click', () => {
-            updateBalance(1000);
-            tg.showAlert('✅ +1000 получено!');
-        });
-
-        // Функции для навигации и модалок
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.add('active');
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-        }
-
-        // Переключение вкладок
-        document.querySelectorAll('.nav-item').forEach(button => {
-            button.addEventListener('click', () => {
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    item.classList.remove('active');
-                });
-                button.classList.add('active');
-                
-                const tab = button.dataset.tab;
-                const grid = document.getElementById('mainContent');
-                grid.innerHTML = '';
-                
-                tabContent[tab].forEach(item => {
-                    const card = document.createElement('div');
-                    card.className = 'card';
-                    card.innerHTML = `
-                        <div class="card-badge">${item.badge}</div>
-                        <div class="card-title">${item.title}</div>
-                        <div class="card-subtitle">${item.subtitle}</div>
-                        <div class="card-value">${item.value}</div>
-                    `;
-                    grid.appendChild(card);
-                });
+        // ========== НАВИГАЦИЯ ==========
+        document.querySelectorAll('.nav-item').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
             });
         });
 
-        // Активируем первую вкладку
-        document.querySelector('[data-tab="pvp"]').classList.add('active');
-        document.querySelector('[data-tab="pvp"]').click();
+        // ========== МОДАЛКА ==========
+        window.closeModal = function() {
+            document.getElementById('winnerModal').classList.remove('active');
+        };
 
-        // Инициализация круга
-        updateWheel();
+        // Закрытие по клику вне
+        document.getElementById('winnerModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('winnerModal')) {
+                closeModal();
+            }
+        });
 
-        // Экспорт функций в глобальную область для модалок
-        window.closeModal = closeModal;
-        window.openModal = openModal;
+        // Запуск
+        init();
     </script>
 </body>
 </html>
