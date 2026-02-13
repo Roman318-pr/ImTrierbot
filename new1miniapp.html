@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Моё Mini App</title>
+    <!-- Подключаем SDK Telegram [citation:5] -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            padding: 20px;
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+        }
+        button {
+            background-color: var(--tg-theme-button-color, #40a7e3);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+        .card {
+            background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 Моё мини-приложение</h1>
+
+    <div class="card" id="user-info">
+        <h3>Информация о пользователе:</h3>
+        <p>Загрузка...</p>
+    </div>
+
+    <div class="card">
+        <h3>Кнопки управления</h3>
+        <button onclick="showJoke()">😂 Показать шутку</button>
+        <button onclick="sendToBot()">📤 Отправить сообщение боту</button>
+        <button onclick="closeApp()">❌ Закрыть</button>
+    </div>
+
+    <div class="card" id="result" style="display: none;">
+        <p id="result-text"></p>
+    </div>
+
+    <script>
+        // Получаем объект WebApp [citation:5]
+        const tg = window.Telegram.WebApp;
+
+        // Сообщаем Telegram, что приложение готово
+        tg.ready();
+
+        // Расширяем приложение на весь экран
+        tg.expand();
+
+        // Получаем данные пользователя
+        const user = tg.initDataUnsafe?.user;
+
+        if (user) {
+            document.getElementById('user-info').innerHTML = `
+                <h3>Информация о пользователе:</h3>
+                <p>👤 Имя: ${user.first_name} ${user.last_name || ''}</p>
+                <p>🆔 ID: ${user.id}</p>
+                <p>🌐 Язык: ${user.language_code || 'не указан'}</p>
+            `;
+        } else {
+            document.getElementById('user-info').innerHTML = `
+                <h3>Информация о пользователе:</h3>
+                <p>Тестовый режим (данные недоступны)</p>
+            `;
+        }
+
+        // Функция для показа шутки (используем ваши анекдоты)
+        function showJoke() {
+            const jokes = [
+                "Сисадмин спит с открытыми глазами? Нет, он просто перезагружается.",
+                "Купил умный холодильник. Теперь он сам заказывает еду...",
+                "Почему программисты путают Хэллоуин и Рождество? Потому что 31 Oct = 25 Dec."
+            ];
+            const randomJoke = jokes[Math.floor(Math.random() * jokes.length)];
+
+            const resultDiv = document.getElementById('result');
+            const resultText = document.getElementById('result-text');
+            resultText.textContent = randomJoke;
+            resultDiv.style.display = 'block';
+        }
+
+        // Отправка данных обратно в бота
+        function sendToBot() {
+            const resultDiv = document.getElementById('result');
+            const resultText = document.getElementById('result-text');
+
+            // Отправляем данные боту [citation:1]
+            tg.sendData(JSON.stringify({
+                action: 'joke_requested',
+                text: 'Пользователь запросил шутку через Mini App'
+            }));
+
+            resultText.textContent = '✅ Запрос отправлен боту!';
+            resultDiv.style.display = 'block';
+        }
+
+        // Закрыть мини-приложение
+        function closeApp() {
+            tg.close();
+        }
+
+        // Настраиваем главную кнопку Telegram [citation:5]
+        tg.MainButton.setText("Отправить шутку");
+        tg.MainButton.onClick(() => {
+            showJoke();
+        });
+        tg.MainButton.show();
+    </script>
+</body>
+</html>
