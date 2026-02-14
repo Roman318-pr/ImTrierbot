@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Цветные рулетки · Мультиплеер</title>
+    <title>Цветные рулетки · Игра вдвоем</title>
     <style>
         * {
             margin: 0;
@@ -43,7 +43,7 @@
             justify-content: center;
             align-items: center;
             gap: 28px;
-            padding: 20px 12px 30px 12px;
+            padding: 20px 12px 20px 12px;
             width: 100%;
         }
         .wheel {
@@ -61,6 +61,21 @@
             color: #aaa;
             margin-bottom: 10px;
             margin-left: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .player-indicator {
+            font-size: 11px;
+            background: #1a1a1a;
+            padding: 4px 10px;
+            border-radius: 30px;
+            color: #888;
+            margin-right: 12px;
+        }
+        .player-indicator.ready {
+            color: #2ecc71;
+            background: #1a3a1a;
         }
         .card-scroll {
             display: flex;
@@ -71,6 +86,7 @@
             padding: 6px 16px;
             scroll-snap-type: x mandatory;
             -webkit-overflow-scrolling: touch;
+            pointer-events: none; /* Запрещаем ручную прокрутку */
         }
         .card-scroll::-webkit-scrollbar {
             display: none;
@@ -105,6 +121,62 @@
             border-radius: 40px;
             border: 1px solid #3a3a3a;
         }
+        .play-area {
+            padding: 10px 20px 20px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .play-button {
+            background: #2a2a2a;
+            border: none;
+            padding: 18px 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: #808080;
+            text-align: center;
+            border-radius: 60px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.8);
+            transition: all 0.2s ease;
+            letter-spacing: 1px;
+            border: 1px solid #3d3d3d;
+        }
+        .play-button.active {
+            background: #2ecc71;
+            color: #ffffff;
+            box-shadow: 0 0 20px #2ecc71;
+            border-color: #2ecc71;
+        }
+        .play-button:active {
+            transform: scale(0.96);
+        }
+        .play-button.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .players-status {
+            display: flex;
+            justify-content: space-between;
+            color: #666;
+            font-size: 13px;
+            padding: 0 10px;
+        }
+        .player-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 10px;
+            background: #444;
+        }
+        .status-dot.ready {
+            background: #2ecc71;
+            box-shadow: 0 0 8px #2ecc71;
+        }
         .bottom-nav {
             width: 100%;
             background: #0a0a0a;
@@ -136,16 +208,6 @@
             color: #ffffff !important;
             background: #2a2a2a;
         }
-        .nav-btn:active {
-            background: #2d2d2d;
-        }
-        .connection-status {
-            color: #2ecc71;
-            font-size: 10px;
-            text-align: center;
-            margin-top: 4px;
-            letter-spacing: 0.5px;
-        }
         @media (max-width: 380px) {
             .color-card {
                 width: 75px;
@@ -157,7 +219,7 @@
             }
         }
     </style>
-    <!-- Подключаем Firebase SDK (версия 8.10.1) -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
@@ -166,19 +228,35 @@
     <div class="wheels-area">
         <!-- рулетка 1 -->
         <div class="wheel">
-            <div class="wheel-label">🎡 холодные · комната</div>
-            <div class="card-scroll" id="wheel1">
-                <!-- карточки заполнятся через js -->
+            <div class="wheel-label">
+                🎡 холодные
+                <span class="player-indicator" id="wheel1Indicator">👤 ждет игрока</span>
             </div>
+            <div class="card-scroll" id="wheel1"></div>
         </div>
         <!-- рулетка 2 -->
         <div class="wheel">
-            <div class="wheel-label">🎡 тёплые · комната</div>
-            <div class="card-scroll" id="wheel2">
-                <!-- карточки -->
+            <div class="wheel-label">
+                🎡 тёплые
+                <span class="player-indicator" id="wheel2Indicator">👤 ждет игрока</span>
+            </div>
+            <div class="card-scroll" id="wheel2"></div>
+        </div>
+        
+        <!-- Область игры -->
+        <div class="play-area">
+            <button class="play-button" id="playButton">▶ ИГРАТЬ</button>
+            <div class="players-status">
+                <div class="player-status" id="player1Status">
+                    <span class="status-dot"></span>
+                    <span>Игрок 1</span>
+                </div>
+                <div class="player-status" id="player2Status">
+                    <span class="status-dot"></span>
+                    <span>Игрок 2</span>
+                </div>
             </div>
         </div>
-        <div class="connection-status" id="status">🟢 Подключено к игрокам</div>
     </div>
 
     <div class="bottom-nav">
@@ -193,25 +271,21 @@
 
 <script>
     (function() {
-        // ========== 1. ВАША КОНФИГУРАЦИЯ FIREBASE ==========
-       const firebaseConfig = {
-            apiKey: "AIzaSyCYeELUnimdyjt0MRfNYfREkGfrt7gUnao",
-            authDomain: "imtrierbot.firebaseapp.com",
-            databaseURL: "https://imtrierbot-default-rtdb.firebaseio.com",
-            projectId: "imtrierbot",
-            storageBucket: "imtrierbot.firebasestorage.app",
-            messagingSenderId: "1062476104894",
-            appId: "1:1062476104894:web:e00869e054a5f3628e0aef",
-            measurementId: "G-QC8TLBE3V2"
-          };
+        // ========== 1. КОНФИГУРАЦИЯ FIREBASE ==========
+        // 👇 ВСТАВЬТЕ СЮДА ВАШ firebaseConfig
+        const firebaseConfig = {
+            apiKey: "AIzaSyBv1abcDeFgHiJkLmNoPqRsTuVwXyZ01234",
+            authDomain: "my-telegram-game.firebaseapp.com",
+            databaseURL: "https://my-telegram-game-default-rtdb.firebaseio.com",
+            projectId: "my-telegram-game",
+            storageBucket: "my-telegram-game.firebasestorage.app",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abc123def456ghi789jkl"
+        };
+        // 👆 ЗАМЕНИТЕ НА ВАШ
 
-        // Инициализация Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-
-        // Ссылки на рулетки в базе данных
-        const wheel1Ref = database.ref('wheel1/scrollPosition');
-        const wheel2Ref = database.ref('wheel2/scrollPosition');
 
         // ========== 2. ДАННЫЕ ДЛЯ КАРТОЧЕК ==========
         const coldColors = [
@@ -237,8 +311,7 @@
             const container = document.getElementById(containerId);
             if (!container) return;
             container.innerHTML = '';
-            // Создаем 20 карточек для плавной прокрутки
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < 30; i++) { // Больше карточек для плавной прокрутки
                 let col = colorsArray[i % colorsArray.length];
                 let card = document.createElement('div');
                 card.className = 'color-card';
@@ -250,61 +323,190 @@
         fillWheel('wheel1', coldColors);
         fillWheel('wheel2', warmColors);
 
-        // ========== 4. ПОЛУЧАЕМ ЭЛЕМЕНТЫ ==========
+        // ========== 4. ИГРОВАЯ ЛОГИКА ==========
+        const playButton = document.getElementById('playButton');
+        const player1Status = document.getElementById('player1Status');
+        const player2Status = document.getElementById('player2Status');
+        const wheel1Indicator = document.getElementById('wheel1Indicator');
+        const wheel2Indicator = document.getElementById('wheel2Indicator');
+        
         const wheel1Element = document.getElementById('wheel1');
         const wheel2Element = document.getElementById('wheel2');
 
-        // Флаги, чтобы не создавать бесконечный цикл (свои действия не слушаем)
-        let isUpdatingFromFirebase1 = false;
-        let isUpdatingFromFirebase2 = false;
+        // Генерируем уникальный ID для этого игрока (сохраняем в памяти браузера)
+        let playerId = localStorage.getItem('playerId');
+        if (!playerId) {
+            playerId = 'player_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('playerId', playerId);
+        }
 
-        // ========== 5. СЛУШАЕМ СКРОЛЛ ОТ ПОЛЬЗОВАТЕЛЯ ==========
-        function setupScrollListener(element, firebaseRef, updatingFlag) {
-            if (!element) return;
-            element.addEventListener('scroll', () => {
-                // Если это обновление пришло из Firebase — игнорируем отправку
-                if (updatingFlag === 'wheel1' && isUpdatingFromFirebase1) return;
-                if (updatingFlag === 'wheel2' && isUpdatingFromFirebase2) return;
+        // Определяем, за какой рулеткой закреплен игрок (по четности ID)
+        const myWheel = parseInt(playerId.charCodeAt(playerId.length-1)) % 2 === 0 ? 'wheel1' : 'wheel2';
+        
+        // Обновляем индикаторы
+        if (myWheel === 'wheel1') {
+            wheel1Indicator.innerHTML = '🎮 вы здесь';
+            wheel1Indicator.classList.add('ready');
+            wheel2Indicator.innerHTML = '👤 ждет игрока';
+            wheel2Indicator.classList.remove('ready');
+        } else {
+            wheel2Indicator.innerHTML = '🎮 вы здесь';
+            wheel2Indicator.classList.add('ready');
+            wheel1Indicator.innerHTML = '👤 ждет игрока';
+            wheel1Indicator.classList.remove('ready');
+        }
 
-                // Отправляем позицию скролла в Firebase
-                const position = element.scrollLeft;
-                firebaseRef.set(position);
+        // Ссылки в Firebase
+        const gameRef = database.ref('game');
+        const playersRef = database.ref('players');
+
+        // Регистрируем игрока при подключении
+        const playerRef = playersRef.child(playerId);
+        playerRef.set({
+            id: playerId,
+            wheel: myWheel,
+            ready: false,
+            online: true
+        });
+
+        // Удаляем игрока при отключении
+        playerRef.onDisconnect().remove();
+
+        // Слушаем изменения игроков
+        playersRef.on('value', (snapshot) => {
+            const players = snapshot.val() || {};
+            const playerCount = Object.keys(players).length;
+            
+            // Обновляем статусы в интерфейсе
+            const playerIds = Object.keys(players);
+            
+            // Очищаем статусы
+            player1Status.querySelector('.status-dot').classList.remove('ready');
+            player2Status.querySelector('.status-dot').classList.remove('ready');
+            
+            // Отмечаем готовых игроков
+            let readyCount = 0;
+            playerIds.forEach(id => {
+                if (players[id].ready) readyCount++;
+            });
+            
+            // Распределяем по слотам (упрощенно)
+            if (playerIds.length > 0) {
+                player1Status.querySelector('.status-dot').classList.add('ready');
+            }
+            if (playerIds.length > 1) {
+                player2Status.querySelector('.status-dot').classList.add('ready');
+            }
+            
+            // Активируем кнопку если оба игрока готовы
+            if (readyCount === 2) {
+                playButton.classList.add('active');
+                playButton.disabled = false;
+            } else {
+                playButton.classList.remove('active');
+            }
+            
+            // Блокируем кнопку если игроков меньше 2
+            if (playerCount < 2) {
+                playButton.classList.add('disabled');
+                playButton.textContent = '▶ ждем второго игрока...';
+            } else {
+                playButton.classList.remove('disabled');
+                playButton.textContent = '▶ ИГРАТЬ';
+            }
+        });
+
+        // Нажатие на кнопку "Играть"
+        playButton.addEventListener('click', () => {
+            // Отмечаем себя как готового
+            playerRef.update({ ready: true });
+            
+            // Проверяем, готовы ли оба
+            playersRef.once('value', (snapshot) => {
+                const players = snapshot.val() || {};
+                const readyPlayers = Object.values(players).filter(p => p.ready).length;
+                
+                if (readyPlayers === 2) {
+                    // Запускаем рулетки
+                    startSpin();
+                    
+                    // Сбрасываем готовность через 3 секунды
+                    setTimeout(() => {
+                        playersRef.once('value', (snapshot) => {
+                            const allPlayers = snapshot.val() || {};
+                            Object.keys(allPlayers).forEach(id => {
+                                playersRef.child(id).update({ ready: false });
+                            });
+                        });
+                    }, 3000);
+                }
+            });
+        });
+
+        // Функция запуска вращения
+        function startSpin() {
+            playButton.textContent = '⏳ КРУТИМ...';
+            playButton.classList.remove('active');
+            
+            // Случайная позиция для каждой рулетки
+            const maxScroll1 = wheel1Element.scrollWidth - wheel1Element.clientWidth;
+            const maxScroll2 = wheel2Element.scrollWidth - wheel2Element.clientWidth;
+            
+            const target1 = Math.random() * maxScroll1;
+            const target2 = Math.random() * maxScroll2;
+            
+            // Анимированная прокрутка
+            let startTime = null;
+            const duration = 2000; // 2 секунды
+            
+            function animate(currentTime) {
+                if (!startTime) startTime = currentTime;
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Easing функция для эффекта замедления
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                
+                const current1 = target1 * easeOut;
+                const current2 = target2 * easeOut;
+                
+                wheel1Element.scrollLeft = current1;
+                wheel2Element.scrollLeft = current2;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    playButton.textContent = '▶ ИГРАТЬ';
+                }
+            }
+            
+            requestAnimationFrame(animate);
+            
+            // Сохраняем финальные позиции в Firebase (для синхронизации)
+            gameRef.update({
+                wheel1Pos: target1,
+                wheel2Pos: target2,
+                lastSpin: Date.now()
             });
         }
 
-        setupScrollListener(wheel1Element, wheel1Ref, 'wheel1');
-        setupScrollListener(wheel2Element, wheel2Ref, 'wheel2');
-
-        // ========== 6. СЛУШАЕМ ИЗМЕНЕНИЯ В FIREBASE ==========
-        // Для первой рулетки
-        wheel1Ref.on('value', (snapshot) => {
-            const position = snapshot.val();
-            if (position !== null && wheel1Element) {
-                isUpdatingFromFirebase1 = true;
-                // Плавно прокручиваем до позиции другого игрока
+        // Синхронизация с другими игроками (если кто-то уже запустил вращение)
+        gameRef.on('value', (snapshot) => {
+            const game = snapshot.val();
+            if (game && game.lastSpin && (Date.now() - game.lastSpin < 5000)) {
+                // Если вращение было менее 5 секунд назад, синхронизируемся
                 wheel1Element.scrollTo({
-                    left: position,
+                    left: game.wheel1Pos,
                     behavior: 'smooth'
                 });
-                // Сбрасываем флаг через небольшое время, чтобы не блокировать события
-                setTimeout(() => { isUpdatingFromFirebase1 = false; }, 300);
-            }
-        });
-
-        // Для второй рулетки
-        wheel2Ref.on('value', (snapshot) => {
-            const position = snapshot.val();
-            if (position !== null && wheel2Element) {
-                isUpdatingFromFirebase2 = true;
                 wheel2Element.scrollTo({
-                    left: position,
+                    left: game.wheel2Pos,
                     behavior: 'smooth'
                 });
-                setTimeout(() => { isUpdatingFromFirebase2 = false; }, 300);
             }
         });
 
-        // ========== 7. НИЖНИЕ КНОПКИ ==========
+        // ========== 5. НИЖНИЕ КНОПКИ ==========
         const navButtons = document.querySelectorAll('.nav-btn');
         function deactivateAll() {
             navButtons.forEach(btn => btn.classList.remove('active-nav'));
@@ -322,21 +524,7 @@
         if (navButtons.length > 0) {
             navButtons[0].classList.add('active-nav');
         }
-
-        // ========== 8. СТАТУС ПОДКЛЮЧЕНИЯ ==========
-        const connectedRef = database.ref('.info/connected');
-        const statusDiv = document.getElementById('status');
-        connectedRef.on('value', (snap) => {
-            if (snap.val() === true) {
-                statusDiv.innerHTML = '🟢 Другие игроки онлайн';
-                statusDiv.style.color = '#2ecc71';
-            } else {
-                statusDiv.innerHTML = '🔴 Ожидание подключения...';
-                statusDiv.style.color = '#e74c3c';
-            }
-        });
     })();
 </script>
 </body>
 </html>
-
