@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Цветные рулетки · С изображениями</title>
+    <title>Цветные рулетки · Со стрелкой</title>
     <style>
         * {
             margin: 0;
@@ -170,11 +170,11 @@
             display: none;
         }
         
-        /* Карточка с изображением */
-        .image-card {
+        /* Карточка с цветом */
+        .color-card {
             flex: 0 0 auto;
-            width: 100px;
-            height: 120px;
+            width: 90px;
+            height: 110px;
             border-radius: 24px;
             background: #1e1e1e;
             display: flex;
@@ -184,29 +184,22 @@
             box-shadow: 0 6px 12px rgba(0,0,0,0.7);
             scroll-snap-align: center;
             border: 2px solid #333;
-            overflow: hidden;
-            padding: 8px;
         }
-        .card-image {
-            width: 70px;
-            height: 70px;
+        .color-preview {
+            width: 50px;
+            height: 50px;
             border-radius: 16px;
-            margin-bottom: 8px;
-            object-fit: cover;
+            margin-bottom: 10px;
             border: 2px solid #3d3d3d;
         }
-        .image-name {
-            font-size: 12px;
+        .color-name {
+            font-size: 15px;
             font-weight: 600;
             text-transform: lowercase;
             background: rgba(0,0,0,0.5);
-            padding: 4px 8px;
+            padding: 4px 12px;
             border-radius: 40px;
             border: 1px solid #3a3a3a;
-            max-width: 90px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
         }
         
         .play-area {
@@ -297,13 +290,13 @@
             background: #2a2a2a;
         }
         @media (max-width: 380px) {
-            .image-card {
-                width: 80px;
+            .color-card {
+                width: 75px;
                 height: 100px;
             }
-            .card-image {
-                width: 50px;
-                height: 50px;
+            .color-preview {
+                width: 40px;
+                height: 40px;
             }
         }
     </style>
@@ -394,55 +387,42 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // ========== 2. ДАННЫЕ ДЛЯ КАРТОЧЕК (ТЕПЕРЬ С ИЗОБРАЖЕНИЯМИ) ==========
-        // Вместо hex-цветов теперь используем ссылки на изображения
-        // Вы можете заменить эти ссылки на свои изображения
-        const coldImages = [
-            { name: 'deep blue', image: 'https://static50.tgcnt.ru/posts/_0/fb/fbc476626a3bdce066b658208d7c148f.jpg' },
-            { name: 'cyan', image: 'https://via.placeholder.com/70x70/06B6D4/ffffff?text=CY' },
-            { name: 'indigo', image: 'https://via.placeholder.com/70x70/4F46E5/ffffff?text=IN' },
-            { name: 'teal', image: 'https://via.placeholder.com/70x70/14B8A6/ffffff?text=TL' },
-            { name: 'sky', image: 'https://via.placeholder.com/70x70/0284C7/ffffff?text=SK' },
-            { name: 'violet', image: 'https://via.placeholder.com/70x70/6D28D9/ffffff?text=VI' }
+        // ========== 2. ДАННЫЕ ДЛЯ ЦВЕТНЫХ КАРТОЧЕК ==========
+        const coldColors = [
+            { name: 'deep blue', hex: '#1E3A8A' },
+            { name: 'cyan', hex: '#06B6D4' },
+            { name: 'indigo', hex: '#4F46E5' },
+            { name: 'teal', hex: '#14B8A6' },
+            { name: 'sky', hex: '#0284C7' },
+            { name: 'violet', hex: '#6D28D9' }
         ];
 
-        const warmImages = [
-            { name: 'coral', image: 'https://via.placeholder.com/70x70/F97316/ffffff?text=CO' },
-            { name: 'amber', image: 'https://via.placeholder.com/70x70/F59E0B/ffffff?text=AM' },
-            { name: 'red', image: 'https://via.placeholder.com/70x70/DC2626/ffffff?text=RD' },
-            { name: 'pink', image: 'https://via.placeholder.com/70x70/EC4899/ffffff?text=PK' },
-            { name: 'rose', image: 'https://via.placeholder.com/70x70/F43F5E/ffffff?text=RS' },
-            { name: 'gold', image: 'https://via.placeholder.com/70x70/CA8A04/ffffff?text=GD' }
+        const warmColors = [
+            { name: 'coral', hex: '#F97316' },
+            { name: 'amber', hex: '#F59E0B' },
+            { name: 'red', hex: '#DC2626' },
+            { name: 'pink', hex: '#EC4899' },
+            { name: 'rose', hex: '#F43F5E' },
+            { name: 'gold', hex: '#CA8A04' }
         ];
 
-        // Пример, как заменить на свои изображения (раскомментируйте и замените ссылки):
-        /*
-        const coldImages = [
-            { name: 'кот', image: 'https://example.com/cat1.jpg' },
-            { name: 'собака', image: 'https://example.com/dog1.jpg' },
-            { name: 'птица', image: 'https://example.com/bird1.jpg' }
-        ];
-        */
-
-        // ========== 3. ЗАПОЛНЕНИЕ РУЛЕТОК С ИЗОБРАЖЕНИЯМИ ==========
-        function fillWheelWithImages(containerId, imagesArray) {
+        // ========== 3. ЗАПОЛНЕНИЕ РУЛЕТОК ЦВЕТАМИ ==========
+        function fillWheel(containerId, colorsArray) {
             const container = document.getElementById(containerId);
             if (!container) return;
             container.innerHTML = '';
             for (let i = 0; i < 30; i++) {
-                let item = imagesArray[i % imagesArray.length];
+                let col = colorsArray[i % colorsArray.length];
                 let card = document.createElement('div');
-                card.className = 'image-card';
-                card.innerHTML = `
-                    <img class="card-image" src="${item.image}" alt="${item.name}" loading="lazy">
-                    <span class="image-name">${item.name}</span>
-                `;
+                card.className = 'color-card';
+                card.innerHTML = `<div class="color-preview" style="background:${col.hex};"></div>
+                                  <span class="color-name">${col.name}</span>`;
                 container.appendChild(card);
             }
         }
         
-        fillWheelWithImages('wheel1', coldImages);
-        fillWheelWithImages('wheel2', warmImages);
+        fillWheel('wheel1', coldColors);
+        fillWheel('wheel2', warmColors);
 
         // ========== 4. ИГРОВАЯ ЛОГИКА ==========
         const playButton = document.getElementById('playButton');
@@ -496,7 +476,7 @@
 
         playerRef.onDisconnect().remove();
 
-        // Слушаем изменения игроков (обновляем счетчик онлайн)
+        // Слушаем изменения игроков
         playersRef.on('value', (snapshot) => {
             const players = snapshot.val() || {};
             const playerCount = Object.keys(players).length;
@@ -538,26 +518,26 @@
             }
         });
 
-        // Функция определения текущего элемента под стрелкой
-        function getCurrentItem(container, itemsArray) {
+        // Функция определения текущего цвета под стрелкой
+        function getCurrentColor(container, colorsArray) {
             if (!container) return null;
             const scrollLeft = container.scrollLeft;
-            const cardWidth = 116; // ширина карточки + gap (100px + 16px)
-            const index = Math.round(scrollLeft / cardWidth) % itemsArray.length;
-            return itemsArray[index];
+            const cardWidth = 106; // ширина карточки + gap (90px + 16px)
+            const index = Math.round(scrollLeft / cardWidth) % colorsArray.length;
+            return colorsArray[index];
         }
 
         // Обновление результатов под стрелками
         function updateResults() {
-            const item1 = getCurrentItem(wheel1Element, coldImages);
-            const item2 = getCurrentItem(wheel2Element, warmImages);
+            const color1 = getCurrentColor(wheel1Element, coldColors);
+            const color2 = getCurrentColor(wheel2Element, warmColors);
             
-            if (item1) {
-                wheel1Result.textContent = `⚡ ${item1.name}`;
+            if (color1) {
+                wheel1Result.textContent = `⚡ ${color1.name}`;
                 wheel1Result.style.backgroundColor = '#ff4444';
             }
-            if (item2) {
-                wheel2Result.textContent = `🔥 ${item2.name}`;
+            if (color2) {
+                wheel2Result.textContent = `🔥 ${color2.name}`;
                 wheel2Result.style.backgroundColor = '#ff4444';
             }
         }
@@ -674,4 +654,3 @@
 </script>
 </body>
 </html>
-
