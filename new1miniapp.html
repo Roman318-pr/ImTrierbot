@@ -752,6 +752,7 @@
             <button class="nav-btn" data-nav="shop">⭐ Магазин</button>
             <button class="nav-btn" data-nav="stats">📊 Статистика</button>
             <button class="nav-btn" data-nav="profile">⚙️ Профиль</button>
+            <button class="nav-btn" data-nav="support">🆘 Поддержка</button> 
         </div>
     </div>
 </div>
@@ -842,6 +843,11 @@
         } else if (tabId === 'stats') {
             statsTab.classList.add('active');
             loadStatistics();
+        }
+        else if (tabId === 'support') {
+            showPaySupport();
+            setTimeout(() => switchTab('game'), 2000);
+            return;
         }
         
         navButtons.forEach(btn => {
@@ -1253,5 +1259,6 @@
 </script>
 </body>
 </html>
+
 
 
