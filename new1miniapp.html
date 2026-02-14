@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Цветные рулетки · Платежи звездами</title>
+    <title>Цветные рулетки · Ставки звездами</title>
     <style>
-        /* Все стили остаются как в предыдущей версии */
+        /* Все стили здесь (они уже были выше) */
         * {
             margin: 0;
             padding: 0;
@@ -38,6 +38,7 @@
             overflow: hidden;
         }
         
+        /* Счетчик игроков онлайн */
         .online-counter {
             background: #0a0a0a;
             padding: 12px 20px;
@@ -65,7 +66,12 @@
             50% { opacity: 0.5; }
             100% { opacity: 1; }
         }
+        .room-info {
+            color: #666;
+            font-size: 12px;
+        }
         
+        /* Баланс звезд */
         .stars-balance {
             background: #0a0a0a;
             padding: 10px 20px;
@@ -106,6 +112,7 @@
             background: #ffd700;
         }
         
+        /* Основной контент */
         .main-content {
             flex: 1 1 auto;
             display: flex;
@@ -113,6 +120,7 @@
             overflow: hidden;
         }
         
+        /* Вкладки */
         .tab-content {
             display: none;
             flex: 1;
@@ -134,6 +142,7 @@
             width: 100%;
         }
         
+        /* Контейнер для рулетки со стрелкой */
         .wheel-container {
             width: 100%;
             position: relative;
@@ -251,6 +260,7 @@
             border: 1px solid #3a3a3a;
         }
         
+        /* Область ставок */
         .bet-area {
             background: #0f0f0f;
             border-radius: 30px;
@@ -412,6 +422,7 @@
             box-shadow: 0 0 8px #2ecc71;
         }
         
+        /* Вкладка магазина */
         .inventory-tab {
             flex: 1;
             display: flex;
@@ -757,16 +768,17 @@
     const username = user?.username || 'player';
 
     // ========== 1. КОНФИГУРАЦИЯ FIREBASE ==========
+    // ЗДЕСЬ ВСТАВЬТЕ ВАШИ ДАННЫЕ ИЗ FIREBASE
     const firebaseConfig = {
-        apiKey: "AIzaSyCYeELUnimdyjt0MRfNYfREkGfrt7gUnao",
-        authDomain: "imtrierbot.firebaseapp.com",
-        databaseURL: "https://imtrierbot-default-rtdb.firebaseio.com",
-        projectId: "imtrierbot",
-        storageBucket: "imtrierbot.firebasestorage.app",
-        messagingSenderId: "1062476104894",
-        appId: "1:1062476104894:web:e00869e054a5f3628e0aef",
-        measurementId: "G-QC8TLBE3V2"
-      };
+        apiKey: "AIzaSyBv1abcDeFgHiJkLmNoPqRsTuVwXyZ01234",
+        authDomain: "my-telegram-game.firebaseapp.com",
+        databaseURL: "https://my-telegram-game-default-rtdb.firebaseio.com",
+        projectId: "my-telegram-game",
+        storageBucket: "my-telegram-game.firebasestorage.app",
+        messagingSenderId: "123456789012",
+        appId: "1:123456789012:web:abc123def456ghi789jkl"
+    };
+
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
@@ -847,7 +859,7 @@
     });
 
     // ========== 5. ЛОГИКА ЗВЕЗД И ПЛАТЕЖЕЙ ==========
-    let starsBalance = 100; // Начальный баланс
+    let starsBalance = 100; // Начальный баланс для новых игроков
     let currentBet = 0;
     const starsBalanceEl = document.getElementById('starsBalance');
     const betAmountInput = document.getElementById('betAmount');
@@ -855,12 +867,13 @@
     const currentBetDisplay = document.getElementById('currentBetDisplay');
     const currentBetValue = document.getElementById('currentBetValue');
 
-    // Загрузка баланса
+    // Загрузка баланса из Firebase
     userRef.child('stars').once('value', (snapshot) => {
         const savedStars = snapshot.val();
         if (savedStars !== null) {
             starsBalance = savedStars;
         } else {
+            // Новый игрок, сохраняем начальный баланс
             userRef.child('stars').set(starsBalance);
         }
         updateStarsDisplay();
@@ -875,7 +888,7 @@
         // Создаем инвойс для оплаты звездами
         tg.openInvoice({
             title: `Покупка ${amount} звезд`,
-            description: `Пополнение баланса на ${amount} ⭐`,
+            description: `Пополнение баланса для игры`,
             payload: JSON.stringify({ 
                 type: 'stars_purchase',
                 amount: amount,
@@ -884,11 +897,11 @@
             currency: 'XTR', // Специальная валюта для звезд
             prices: [{ 
                 label: `${amount} ⭐`, 
-                amount: price // Цена в звездах (1:1)
+                amount: price // Цена в звездах
             }]
         }, (result) => {
             if (result === 'paid') {
-                // Платеж успешен
+                // Платеж успешен - добавляем звезды на баланс
                 starsBalance += amount;
                 userRef.child('stars').set(starsBalance);
                 updateStarsDisplay();
@@ -913,10 +926,12 @@
         });
     };
 
+    // Установка суммы ставки через кнопки
     window.setBet = function(amount) {
         betAmountInput.value = amount;
     };
 
+    // Функция ставки
     window.placeBet = function() {
         const betAmount = parseInt(betAmountInput.value);
         
@@ -954,13 +969,13 @@
     const onlineCountSpan = document.getElementById('onlineCount');
     const wheel1Result = document.getElementById('wheel1Result');
     const wheel2Result = document.getElementById('wheel2Result');
-    
+
     const wheel1Element = document.getElementById('wheel1');
     const wheel2Element = document.getElementById('wheel2');
 
     // Определяем, за какой рулеткой закреплен игрок
     const myWheel = parseInt(userId.slice(-1)) % 2 === 0 ? 'wheel1' : 'wheel2';
-    
+
     if (myWheel === 'wheel1') {
         wheel1Indicator.innerHTML = '🎮 вы здесь';
         wheel1Indicator.classList.add('ready');
@@ -973,10 +988,10 @@
         wheel1Indicator.classList.remove('ready');
     }
 
-    // Регистрируем игрока
+    // Регистрируем игрока в Firebase
     const playersRef = database.ref('players');
     const playerRef = playersRef.child(userId);
-    
+
     playerRef.set({
         id: userId,
         username: username,
@@ -1028,6 +1043,7 @@
         }
     });
 
+    // Функция определения текущего цвета под стрелкой
     function getCurrentColor(container, colorsArray) {
         if (!container) return null;
         const scrollLeft = container.scrollLeft;
@@ -1051,6 +1067,7 @@
     wheel1Element.addEventListener('scroll', updateResults);
     wheel2Element.addEventListener('scroll', updateResults);
 
+    // Нажатие на кнопку "Играть"
     playButton.addEventListener('click', () => {
         if (currentBet === 0) {
             tg.showAlert('Сначала сделайте ставку!');
@@ -1078,6 +1095,7 @@
         });
     });
 
+    // Функция запуска вращения
     function startSpin() {
         playButton.textContent = '⏳ КРУТИМ...';
         playButton.classList.remove('active');
@@ -1116,6 +1134,7 @@
         requestAnimationFrame(animate);
     }
 
+    // Функция разрешения игры (определение победителя)
     function resolveGame() {
         const color1 = getCurrentColor(wheel1Element, coldColors);
         const color2 = getCurrentColor(wheel2Element, warmColors);
@@ -1139,7 +1158,6 @@
         userRef.child('stars').set(starsBalance);
         updateStarsDisplay();
         
-        // Сохраняем историю игры
         const gameResult = {
             date: Date.now(),
             bet: currentBet,
@@ -1151,7 +1169,6 @@
         
         historyRef.push(gameResult);
         
-        // Обновляем статистику
         statsRef.once('value', (snapshot) => {
             const stats = snapshot.val() || { 
                 games: 0, 
@@ -1171,7 +1188,6 @@
             statsRef.set(stats);
         });
         
-        // Сбрасываем ставку
         currentBet = 0;
         currentBetDisplay.style.display = 'none';
         placeBetBtn.textContent = '📥 Сделать ставку';
@@ -1194,7 +1210,6 @@
             document.getElementById('totalSpent').textContent = stats.spent;
         });
         
-        // Загружаем историю игр
         historyRef.limitToLast(10).once('value', (snapshot) => {
             const history = snapshot.val() || {};
             const historyList = document.getElementById('gameHistory');
