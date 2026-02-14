@@ -758,6 +758,7 @@
 </div>
 
 <script>
+    console.error = function() {};
     // Инициализация Telegram Web App
     const tg = window.Telegram.WebApp;
     tg.expand();
@@ -890,8 +891,8 @@
     }
 
     // Функция покупки звезд
-    window.buyStars = function(amount, price) {
-        // Создаем инвойс для оплаты звездами
+        window.buyStars = function(amount, price) {
+        // Без showPopup - сразу открываем инвойс
         tg.openInvoice({
             title: `Покупка ${amount} звезд`,
             description: `Пополнение баланса для игры`,
@@ -900,34 +901,27 @@
                 amount: amount,
                 userId: userId 
             }),
-            currency: 'XTR', // Специальная валюта для звезд
+            currency: 'XTR',
             prices: [{ 
                 label: `${amount} ⭐`, 
-                amount: price // Цена в звездах
+                amount: price
             }]
         }, (result) => {
+            console.log("Результат платежа:", result);
+            
             if (result === 'paid') {
-                // Платеж успешен - добавляем звезды на баланс
                 starsBalance += amount;
                 userRef.child('stars').set(starsBalance);
                 updateStarsDisplay();
-                
-                // Сохраняем историю покупок
-                const purchaseRef = userRef.child('purchases').push();
-                purchaseRef.set({
-                    amount: amount,
-                    date: Date.now(),
-                    type: 'stars'
-                });
-                
-                tg.showAlert(`✅ Баланс пополнен на ${amount} ⭐!`);
-                
-                // Возвращаемся на вкладку игры
+                alert(`✅ Баланс пополнен на ${amount} ⭐!`); // Используем alert вместо showPopup
                 switchTab('game');
             } else if (result === 'cancelled') {
-                tg.showAlert('❌ Платеж отменен');
+                alert('❌ Платеж отменен');
             } else if (result === 'failed') {
-                tg.showAlert('❌ Ошибка платежа');
+                alert('❌ Ошибка платежа');
+            } else {
+                console.log('Неизвестный статус:', result);
+                alert(`❌ Статус: ${result}`);
             }
         });
     };
@@ -1259,6 +1253,7 @@
 </script>
 </body>
 </html>
+
 
 
 
