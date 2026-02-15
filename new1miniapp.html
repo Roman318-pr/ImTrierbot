@@ -832,35 +832,111 @@
             tonConnector = initTonConnect();
             if (!tonConnector) return;
         }
-
-        // Получаем список кошельков
-        const wallets = tonConnector.getWallets();
-
-        let walletsList = '';
-        wallets.forEach(wallet => {
-            walletsList += `
-                <button onclick="connectToWallet('${wallet.name}')" style="
-                    background: #2a2a2a;
-                    border: 2px solid #0088cc;
+        
+        try {
+            // Получаем список кошельков
+            let wallets = [];
+            
+            // Разные версии SDK могут по-разному возвращать кошельки
+            if (tonConnector.wallets && Array.isArray(tonConnector.wallets)) {
+                wallets = tonConnector.wallets;
+            } else if (tonConnector.getWallets && typeof tonConnector.getWallets === 'function') {
+                wallets = tonConnector.getWallets();
+            } else {
+                // Если не получилось получить список, используем стандартный
+                wallets = [
+                    { name: 'Tonkeeper', image: 'https://tonkeeper.com/assets/tonkeeper-icon.png' },
+                    { name: 'Tonhub', image: 'https://tonhub.com/logo.png' },
+                    { name: 'OpenMask', image: 'https://openmask.app/logo.png' }
+                ];
+            }
+            
+            // Убеждаемся, что wallets - это массив
+            if (!Array.isArray(wallets)) {
+                console.warn("wallets не массив, используем стандартный список", wallets);
+                wallets = [
+                    { name: 'Tonkeeper' },
+                    { name: 'Tonhub' },
+                    { name: 'OpenMask' },
+                    { name: 'MyTonWallet' }
+                ];
+            }
+            
+            let walletsList = '';
+            wallets.forEach(wallet => {
+                const walletName = wallet.name || 'Кошелек';
+                walletsList += `
+                    <button onclick="connectToWallet('${walletName}')" style="
+                        background: #2a2a2a;
+                        border: 2px solid #0088cc;
+                        color: white;
+                        padding: 15px 20px;
+                        margin: 8px 0;
+                        border-radius: 40px;
+                        font-size: 16px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        width: 100%;
+                        transition: all 0.2s;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 10px;
+                    " onmouseover="this.style.background='#0088cc'" 
+                       onmouseout="this.style.background='#2a2a2a'">
+                        <span>💎</span> ${walletName}
+                    </button>
+                `;
+            });
+            
+            const div = document.createElement('div');
+            div.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: #1a1a1a;
+                color: white;
+                padding: 25px;
+                border-radius: 30px;
+                border: 2px solid #0088cc;
+                z-index: 10000;
+                text-align: center;
+                min-width: 300px;
+                max-width: 90%;
+                max-height: 80vh;
+                overflow-y: auto;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            `;
+            
+            div.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <div style="font-size: 30px; margin-bottom: 10px;">💎</div>
+                    <div style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">Выберите кошелек</div>
+                    <div style="color: #aaa; font-size: 14px;">Для ставок в TON</div>
+                </div>
+                ${walletsList}
+                <button onclick="this.parentElement.remove()" style="
+                    background: #ff4444;
+                    border: none;
                     color: white;
-                    padding: 15px 20px;
-                    margin: 8px 0;
+                    padding: 12px 25px;
+                    margin-top: 20px;
                     border-radius: 40px;
-                    font-size: 16px;
+                    font-size: 14px;
                     font-weight: bold;
                     cursor: pointer;
                     width: 100%;
-                    transition: all 0.2s;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 10px;
-                " onmouseover="this.style.background='#0088cc'"
-                   onmouseout="this.style.background='#2a2a2a'">
-                    <span>💎</span> ${wallet.name}
-                </button>
+                ">✕ Отмена</button>
             `;
-        });
+            
+            document.body.appendChild(div);
+            
+        } catch (error) {
+            console.error("Ошибка в showWalletSelector:", error);
+            showSimpleAlert('❌ Ошибка загрузки списка кошельков');
+        }
+    }
 
         const div = document.createElement('div');
         div.style.cssText = `
@@ -908,19 +984,24 @@
 
     // Подключение к выбранному кошельку
     window.connectToWallet = function(walletName) {
+        // Закрываем окно выбора
         document.querySelector('div[style*="position: fixed"]')?.remove();
-
+        
         if (!tonConnector) {
             tonConnector = initTonConnect();
             if (!tonConnector) return;
         }
-
+        
         showSimpleAlert(`🔄 Подключение к ${walletName}...`);
-
-        // Запускаем подключение
-        tonConnector.connect();
+        
+        try {
+            // Запускаем подключение
+            tonConnector.connect();
+        } catch (error) {
+            console.error("Ошибка подключения:", error);
+            showSimpleAlert('❌ Ошибка подключения: ' + error.message);
+        }
     };
-
     // Отправка транзакции ставки
     async function sendBetTransaction(amount) {
         if (!tonConnector || !walletConnected) {
@@ -1446,5 +1527,6 @@
 </script>
 </body>
 </html>
+
 
 
