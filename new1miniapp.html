@@ -730,50 +730,43 @@
     let walletConnected = false;
     let walletAddress = '';
     let tonBalance = 0;
+    let currentTransaction = null;
 
     const tonBalanceEl = document.getElementById('tonBalance');
     const connectWalletBtn = document.getElementById('connectWalletBtn');
     const walletAddressEl = document.getElementById('walletAddress');
     const walletBalanceEl = document.getElementById('walletBalance');
 
-    // Проверяем, поддерживается ли TON Connect
+    // Адрес для получения ставок (ваш кошелек)
+    const RECIPIENT_ADDRESS = 'UQBjrnhS04mxMkEpYGngrd_UnypAFaQaKQcpf81BuQEJs1-i';
+
+    // Проверяем поддержку TON Connect
     function isTonConnectSupported() {
         return typeof TonConnectSDK !== 'undefined';
     }
 
-    // Функция подключения кошелька
-    window.connectWallet = function() {
-        console.log("Подключение кошелька...");
-
+    // Инициализация TON Connect
+    function initTonConnect() {
         if (!isTonConnectSupported()) {
-            showSimpleAlert('❌ TON Connect не загружен. Обновите страницу.');
-            return;
-        }
-
-        if (walletConnected) {
-            switchTab('wallet');
-            return;
+            showSimpleAlert('❌ TON Connect не загружен');
+            return null;
         }
 
         try {
-            // Инициализация TON Connect с реальным манифестом
-            // ВАЖНО: замените на ваш реальный манифест!
-            const manifestUrl = 'https://roman318-pr.github.io/ImTrierbot/tonconnect-manifest.json';
-
-            tonConnector = new TonConnectSDK.TonConnect({
-                manifestUrl: manifestUrl
+            const connector = new TonConnectSDK.TonConnect({
+                manifestUrl: 'https://roman318-pr.github.io/ImTrierbot/tonconnect-manifest.json'
             });
 
-            // Слушаем изменения статуса
-            tonConnector.onStatusChange(walletInfo => {
-                console.log("Статус кошелька:", walletInfo);
+            // Подписываемся на изменения статуса
+            connector.onStatusChange((walletInfo) => {
+                console.log("Статус кошелька изменился:", walletInfo);
 
                 if (walletInfo && walletInfo.account) {
                     // Кошелек подключен
                     walletConnected = true;
                     walletAddress = walletInfo.account.address;
 
-                    // Получаем баланс через API (упрощенно)
+                    // Получаем баланс
                     fetchTONBalance(walletAddress);
 
                     // Обновляем UI
@@ -784,10 +777,14 @@
                     // Сохраняем в Firebase
                     userRef.child('wallet').set({
                         address: walletAddress,
-                        connected: true
+                        connected: true,
+                        network: walletInfo.account.chain
                     });
 
                     showSimpleAlert('✅ Кошелек успешно подключен!');
+
+                    // Закрываем окно выбора если открыто
+                    document.querySelector('div[style*="position: fixed"]')?.remove();
                 } else {
                     // Кошелек отключен
                     walletConnected = false;
@@ -802,79 +799,180 @@
                 }
             });
 
-            // Запускаем подключение
-            tonConnector.connect();
-
+            return connector;
         } catch (error) {
-            console.error("Ошибка:", error);
-            showSimpleAlert('❌ Ошибка: ' + error.message);
-        }
-    };
-
-    // Получение баланса через TON API
-    async function fetchTONBalance(address) {
-        try {
-            // Используем публичный TON API
-            const response = await fetch(`https://toncenter.com/api/v2/getAddressBalance?address=${address}`);
-            const data = await response.json();
-
-            if (data.ok) {
-                // Баланс приходит в наноTON (делим на 1e9)
-                tonBalance = data.result / 1e9;
-                tonBalanceEl.textContent = tonBalance.toFixed(2);
-                walletBalanceEl.textContent = tonBalance.toFixed(2);
-            }
-        } catch (error) {
-            console.error("Ошибка получения баланса:", error);
-            tonBalance = 0;
+            console.error("Ошибка инициализации TON Connect:", error);
+            showSimpleAlert('❌ Ошибка инициализации: ' + error.message);
+            return null;
         }
     }
 
-    // Функция реальной ставки
-    async function placeRealBet(amount) {
-        if (!walletConnected || !tonConnector) {
-            showSimpleAlert('❌ Сначала подключите кошелек');
-            return false;
+    // Подключение кошелька
+    window.connectWallet = function() {
+        console.log("Подключение кошелька...");
+
+        if (walletConnected) {
+            switchTab('wallet');
+            return;
         }
 
-        if (amount > tonBalance) {
-            showSimpleAlert('❌ Недостаточно TON на балансе');
+        // Инициализируем коннектор если нужно
+        if (!tonConnector) {
+            tonConnector = initTonConnect();
+            if (!tonConnector) return;
+        }
+
+        // Показываем список доступных кошельков
+        showWalletSelector();
+    };
+
+    // Показываем список кошельков
+    function showWalletSelector() {
+        if (!tonConnector) {
+            tonConnector = initTonConnect();
+            if (!tonConnector) return;
+        }
+
+        // Получаем список кошельков
+        const wallets = tonConnector.getWallets();
+
+        let walletsList = '';
+        wallets.forEach(wallet => {
+            walletsList += `
+                <button onclick="connectToWallet('${wallet.name}')" style="
+                    background: #2a2a2a;
+                    border: 2px solid #0088cc;
+                    color: white;
+                    padding: 15px 20px;
+                    margin: 8px 0;
+                    border-radius: 40px;
+                    font-size: 16px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    width: 100%;
+                    transition: all 0.2s;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 10px;
+                " onmouseover="this.style.background='#0088cc'"
+                   onmouseout="this.style.background='#2a2a2a'">
+                    <span>💎</span> ${wallet.name}
+                </button>
+            `;
+        });
+
+        const div = document.createElement('div');
+        div.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1a1a1a;
+            color: white;
+            padding: 25px;
+            border-radius: 30px;
+            border: 2px solid #0088cc;
+            z-index: 10000;
+            text-align: center;
+            min-width: 300px;
+            max-width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        `;
+
+        div.innerHTML = `
+            <div style="margin-bottom: 20px;">
+                <div style="font-size: 30px; margin-bottom: 10px;">💎</div>
+                <div style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">Выберите кошелек</div>
+                <div style="color: #aaa; font-size: 14px;">Для ставок в TON</div>
+            </div>
+            ${walletsList}
+            <button onclick="this.parentElement.remove()" style="
+                background: #ff4444;
+                border: none;
+                color: white;
+                padding: 12px 25px;
+                margin-top: 20px;
+                border-radius: 40px;
+                font-size: 14px;
+                font-weight: bold;
+                cursor: pointer;
+                width: 100%;
+            ">✕ Отмена</button>
+        `;
+
+        document.body.appendChild(div);
+    }
+
+    // Подключение к выбранному кошельку
+    window.connectToWallet = function(walletName) {
+        document.querySelector('div[style*="position: fixed"]')?.remove();
+
+        if (!tonConnector) {
+            tonConnector = initTonConnect();
+            if (!tonConnector) return;
+        }
+
+        showSimpleAlert(`🔄 Подключение к ${walletName}...`);
+
+        // Запускаем подключение
+        tonConnector.connect();
+    };
+
+    // Отправка транзакции ставки
+    async function sendBetTransaction(amount) {
+        if (!tonConnector || !walletConnected) {
+            showSimpleAlert('❌ Кошелек не подключен');
             return false;
         }
 
         try {
-            // Адрес кошелька для получения ставок (ВАШ КОШЕЛЕК)
-            const recipientAddress = 'EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N';
-
-            // Создаем транзакцию
             const transaction = {
-                validUntil: Date.now() + 1000000, // Срок действия
+                validUntil: Math.floor(Date.now() / 1000) + 600, // 10 минут
                 messages: [
                     {
-                        address: recipientAddress,
+                        address: RECIPIENT_ADDRESS,
                         amount: (amount * 1e9).toString(), // Конвертируем в наноTON
-                        payload: '' // Можно добавить комментарий
+                        payload: 'Ставка в Color Roulette'
                     }
                 ]
             };
+
+            showSimpleAlert(`💰 Отправка ставки ${amount} TON...`);
 
             // Отправляем транзакцию
             const result = await tonConnector.sendTransaction(transaction);
             console.log("Транзакция отправлена:", result);
 
-            // Ждем подтверждения (упрощенно)
-            showSimpleAlert(`✅ Ставка ${amount} TON отправлена! Ожидание подтверждения...`);
+            // Парсим результат
+            const txData = JSON.parse(result);
 
-            return true;
+            showSimpleAlert(`✅ Ставка ${amount} TON принята!\nХеш: ${txData.hash.slice(0, 10)}...`);
+
+            return {
+                success: true,
+                hash: txData.hash,
+                amount: amount
+            };
 
         } catch (error) {
-            console.error("Ошибка ставки:", error);
-            showSimpleAlert('❌ Ошибка: ' + error.message);
+            console.error("Ошибка отправки транзакции:", error);
+
+            let errorMessage = '❌ Ошибка транзакции';
+            if (error.message.includes('rejected')) {
+                errorMessage = '❌ Транзакция отклонена пользователем';
+            } else if (error.message.includes('insufficient')) {
+                errorMessage = '❌ Недостаточно средств';
+            }
+
+            showSimpleAlert(errorMessage);
             return false;
         }
     }
 
-    // Обновленная функция ставки
+    // Функция ставки (обновленная)
     window.placeBet = async function() {
         const betAmount = parseFloat(betAmountInput.value);
 
@@ -888,23 +986,68 @@
             return;
         }
 
-        if (!walletConnected) {
-            showSimpleAlert('Сначала подключите кошелек!');
+        if (!walletConnected || !tonConnector) {
+            showSimpleAlert('❌ Сначала подключите кошелек');
             connectWallet();
             return;
         }
 
-        // Отправляем реальную транзакцию
-        const success = await placeRealBet(betAmount);
+        if (betAmount > tonBalance) {
+            showSimpleAlert('❌ Недостаточно TON на балансе');
+            return;
+        }
 
-        if (success) {
+        // Отправляем реальную транзакцию
+        const result = await sendBetTransaction(betAmount);
+
+        if (result && result.success) {
             currentBet = betAmount;
             currentBetValue.textContent = `${currentBet} TON`;
             currentBetDisplay.style.display = 'flex';
             placeBetBtn.textContent = '✏️ Изменить ставку';
             placeBetBtn.style.background = '#2a2a2a';
+
+            // Сохраняем информацию о транзакции
+            currentTransaction = result;
         }
     };
+
+    // Функция выплаты выигрыша
+    async function sendWinTransaction(amount, playerAddress) {
+        if (!tonConnector || !walletConnected) {
+            showSimpleAlert('❌ Кошелек не подключен');
+            return false;
+        }
+
+        try {
+            const transaction = {
+                validUntil: Math.floor(Date.now() / 1000) + 600,
+                messages: [
+                    {
+                        address: playerAddress,
+                        amount: (amount * 1e9).toString(),
+                        payload: '🎉 Выигрыш в Color Roulette'
+                    }
+                ]
+            };
+
+            const result = await tonConnector.sendTransaction(transaction);
+            const txData = JSON.parse(result);
+
+            showSimpleAlert(`🎉 Выигрыш ${amount} TON отправлен!\nХеш: ${txData.hash.slice(0, 10)}...`);
+
+            return {
+                success: true,
+                hash: txData.hash,
+                amount: amount
+            };
+
+        } catch (error) {
+            console.error("Ошибка выплаты:", error);
+            showSimpleAlert('❌ Ошибка выплаты: ' + error.message);
+            return false;
+        }
+    }
 
     // Обновленная функция завершения игры
     async function resolveGame() {
@@ -919,18 +1062,9 @@
 
         if (isWin) {
             // Отправляем выигрыш игроку
-            try {
-                const result = await tonConnector.sendTransaction({
-                    validUntil: Date.now() + 1000000,
-                    messages: [
-                        {
-                            address: walletAddress, // Отправляем на адрес игрока
-                            amount: (winAmount * 1e9).toString(),
-                            payload: '🎉 Выигрыш в Color Roulette'
-                        }
-                    ]
-                });
+            const result = await sendWinTransaction(winAmount, walletAddress);
 
+            if (result && result.success) {
                 showSimpleAlert(`🎉 ПОБЕДА! +${winAmount} TON отправлено на ваш кошелек!`);
 
                 // Обновляем статистику
@@ -939,22 +1073,18 @@
                 currentStats.wins += 1;
                 currentStats.earned += winAmount;
                 await statsRef.set(currentStats);
-
-            } catch (error) {
-                console.error("Ошибка выплаты:", error);
-                showSimpleAlert('❌ Ошибка выплаты: ' + error.message);
             }
         } else {
             showSimpleAlert(`😢 Проигрыш: ${currentBet} TON`);
 
-            // Обновляем статистику
+            // Обновляем статистику проигрышей
             const stats = await statsRef.once('value');
             const currentStats = stats.val() || { losses: 0 };
             currentStats.losses += 1;
             await statsRef.set(currentStats);
         }
 
-        // Сохраняем историю
+        // Сохраняем историю игры
         const gameResult = {
             date: Date.now(),
             bet: currentBet,
@@ -962,7 +1092,7 @@
             amount: isWin ? winAmount : -currentBet,
             color1: color1?.name,
             color2: color2?.name,
-            txHash: isWin ? 'pending' : 'sent'
+            txHash: currentTransaction?.hash || null
         };
 
         await database.ref('games/' + userId).push(gameResult);
@@ -972,6 +1102,7 @@
         currentBetDisplay.style.display = 'none';
         placeBetBtn.textContent = '📥 Сделать ставку';
         placeBetBtn.style.background = '#0088cc';
+        currentTransaction = null;
 
         // Обновляем баланс
         if (walletAddress) {
@@ -979,58 +1110,45 @@
         }
     }
 
-    // Функция отключения кошелька
+    // Получение баланса через TON API
+    async function fetchTONBalance(address) {
+        try {
+            const response = await fetch(`https://toncenter.com/api/v2/getAddressBalance?address=${address}`);
+            const data = await response.json();
+
+            if (data.ok) {
+                tonBalance = data.result / 1e9;
+                tonBalanceEl.textContent = tonBalance.toFixed(2);
+                walletBalanceEl.textContent = tonBalance.toFixed(2);
+            }
+        } catch (error) {
+            console.error("Ошибка получения баланса:", error);
+        }
+    }
+
+    // Отключение кошелька
     window.disconnectWallet = function() {
         if (tonConnector) {
             tonConnector.disconnect();
         }
-        showSimpleAlert('Кошелек отключен');
-    };
+
+        walletConnected = false;
+        walletAddress = '';
+        tonBalance = 0;
+
+        connectWalletBtn.textContent = '🔌 Подключить кошелек';
+        connectWalletBtn.classList.remove('connected');
+        tonBalanceEl.textContent = '0';
+        walletAddressEl.textContent = 'Кошелек не подключен';
+        walletBalanceEl.textContent = '0';
+
+        userRef.child('wallet').remove();
+        showSimpleAlert('🔌 Кошелек отключен');
+    }
 
     function formatAddress(address) {
         if (!address) return 'Кошелек не подключен';
         return address.slice(0, 6) + '...' + address.slice(-4);
-    }
-
-    // Простое уведомление для старых версий Telegram
-    function showSimpleAlert(message) {
-        // Пробуем использовать нативный showPopup, если есть
-        if (tg && tg.showPopup) {
-            tg.showPopup({
-                message: message,
-                buttons: [{ text: 'OK', type: 'default' }]
-            });
-        } else {
-            // Создаем свое окно
-            const div = document.createElement('div');
-            div.style.cssText = `
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: #1a1a1a;
-                color: white;
-                padding: 20px;
-                border-radius: 20px;
-                border: 2px solid #0088cc;
-                z-index: 10000;
-                text-align: center;
-                max-width: 80%;
-            `;
-            div.innerHTML = `
-                <div style="margin-bottom: 15px;">${message}</div>
-                <button onclick="this.parentElement.remove()" style="
-                    background: #0088cc;
-                    border: none;
-                    padding: 10px 30px;
-                    border-radius: 30px;
-                    color: white;
-                    font-weight: bold;
-                    cursor: pointer;
-                ">OK</button>
-            `;
-            document.body.appendChild(div);
-        }
     }
 
     // ========== 3. ДАННЫЕ ДЛЯ ЦВЕТНЫХ КАРТОЧЕК ==========
