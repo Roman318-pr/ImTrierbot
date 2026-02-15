@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Цветные рулетки · Ставки звездами</title>
+    <title>Цветные рулетки · TON ставки</title>
     <style>
-        /* Все стили здесь (они уже были выше) */
         * {
             margin: 0;
             padding: 0;
@@ -66,13 +65,9 @@
             50% { opacity: 0.5; }
             100% { opacity: 1; }
         }
-        .room-info {
-            color: #666;
-            font-size: 12px;
-        }
         
-        /* Баланс звезд */
-        .stars-balance {
+        /* Баланс TON */
+        .ton-balance {
             background: #0a0a0a;
             padding: 10px 20px;
             display: flex;
@@ -80,36 +75,41 @@
             align-items: center;
             border-bottom: 1px solid #1f1f1f;
         }
-        .stars-count {
+        .wallet-info {
             display: flex;
             align-items: center;
             gap: 8px;
             background: #1a1a1a;
             padding: 6px 16px;
             border-radius: 40px;
-            border: 1px solid #f0b400;
+            border: 1px solid #0088cc;
         }
-        .stars-icon {
+        .ton-icon {
             font-size: 18px;
         }
-        .stars-value {
+        .ton-value {
             font-size: 16px;
             font-weight: bold;
-            color: #f0b400;
+            color: #0088cc;
         }
-        .buy-stars-btn {
-            background: #f0b400;
+        .connect-wallet-btn {
+            background: #0088cc;
             border: none;
             padding: 8px 16px;
             border-radius: 30px;
-            color: #000;
+            color: #fff;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
         }
-        .buy-stars-btn:active {
+        .connect-wallet-btn.connected {
+            background: #2a2a2a;
+            color: #0088cc;
+            border: 1px solid #0088cc;
+        }
+        .connect-wallet-btn:active {
             transform: scale(0.95);
-            background: #ffd700;
+            background: #006699;
         }
         
         /* Основной контент */
@@ -120,7 +120,6 @@
             overflow: hidden;
         }
         
-        /* Вкладки */
         .tab-content {
             display: none;
             flex: 1;
@@ -142,7 +141,6 @@
             width: 100%;
         }
         
-        /* Контейнер для рулетки со стрелкой */
         .wheel-container {
             width: 100%;
             position: relative;
@@ -260,7 +258,6 @@
             border: 1px solid #3a3a3a;
         }
         
-        /* Область ставок */
         .bet-area {
             background: #0f0f0f;
             border-radius: 30px;
@@ -297,7 +294,7 @@
         
         .bet-input:focus {
             outline: none;
-            border-color: #f0b400;
+            border-color: #0088cc;
         }
         
         .bet-presets {
@@ -319,16 +316,16 @@
         }
         
         .bet-preset:active {
-            background: #f0b400;
-            color: #000;
+            background: #0088cc;
+            color: #fff;
         }
         
         .place-bet-btn {
-            background: #f0b400;
+            background: #0088cc;
             border: none;
             padding: 15px;
             border-radius: 30px;
-            color: #000;
+            color: #fff;
             font-weight: bold;
             font-size: 16px;
             cursor: pointer;
@@ -339,7 +336,7 @@
         
         .place-bet-btn:active {
             transform: scale(0.98);
-            background: #ffd700;
+            background: #006699;
         }
         
         .place-bet-btn.disabled {
@@ -358,7 +355,7 @@
         }
         
         .current-bet-value {
-            color: #f0b400;
+            color: #0088cc;
             font-weight: bold;
             font-size: 18px;
         }
@@ -422,8 +419,7 @@
             box-shadow: 0 0 8px #2ecc71;
         }
         
-        /* Вкладка магазина */
-        .inventory-tab {
+        .wallet-tab {
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -431,54 +427,32 @@
             overflow-y: auto;
         }
         
-        .inventory-header {
+        .wallet-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
         
-        .inventory-title {
+        .wallet-title {
             font-size: 20px;
             font-weight: bold;
             color: #fff;
         }
         
-        .stars-shop {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-        
-        .stars-pack {
-            background: #0f0f0f;
+        .wallet-address {
+            background: #1a1a1a;
+            padding: 12px;
             border-radius: 20px;
-            padding: 20px;
-            text-align: center;
-            border: 1px solid #333;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .stars-pack:active {
-            transform: scale(0.95);
-            border-color: #f0b400;
-        }
-        
-        .pack-stars {
-            font-size: 30px;
-            font-weight: bold;
-            color: #f0b400;
-            margin-bottom: 5px;
-        }
-        
-        .pack-price {
-            color: #aaa;
+            font-family: monospace;
             font-size: 14px;
+            color: #0088cc;
+            border: 1px solid #333;
+            margin-bottom: 20px;
+            word-break: break-all;
         }
         
-        .stats-grid {
+        .wallet-stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
@@ -496,7 +470,7 @@
         .stat-value {
             font-size: 24px;
             font-weight: bold;
-            color: #f0b400;
+            color: #0088cc;
             margin-bottom: 5px;
         }
         
@@ -579,6 +553,8 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <!-- TON Connect SDK -->
+    <script src="https://unpkg.com/@tonconnect/sdk@2.2.0/dist/tonconnect-sdk.min.js"></script>
 </head>
 <body>
 <div class="app-container">
@@ -593,13 +569,13 @@
         </div>
     </div>
 
-    <!-- Баланс звезд -->
-    <div class="stars-balance">
-        <div class="stars-count">
-            <span class="stars-icon">⭐</span>
-            <span class="stars-value" id="starsBalance">0</span>
+    <!-- Баланс TON -->
+    <div class="ton-balance">
+        <div class="wallet-info" id="walletInfo">
+            <span class="ton-icon">💎</span>
+            <span class="ton-value" id="tonBalance">0</span>
         </div>
-        <button class="buy-stars-btn" onclick="switchTab('shop')">Купить звезды</button>
+        <button class="connect-wallet-btn" id="connectWalletBtn" onclick="connectWallet()">🔌 Подключить кошелек</button>
     </div>
 
     <!-- Основной контент -->
@@ -634,15 +610,15 @@
                 <div class="bet-area">
                     <div class="bet-title">
                         <span>💰 Ваша ставка</span>
-                        <span>Мин: 10 ⭐ | Макс: 1000 ⭐</span>
+                        <span>Мин: 0.1 TON | Макс: 100 TON</span>
                     </div>
                     
                     <div class="bet-controls">
-                        <input type="number" class="bet-input" id="betAmount" value="50" min="10" max="1000" step="10">
+                        <input type="number" class="bet-input" id="betAmount" value="0.1" min="0.1" max="100" step="0.1">
                         <div class="bet-presets">
-                            <button class="bet-preset" onclick="setBet(50)">50</button>
-                            <button class="bet-preset" onclick="setBet(100)">100</button>
-                            <button class="bet-preset" onclick="setBet(200)">200</button>
+                            <button class="bet-preset" onclick="setBet(0.1)">0.1</button>
+                            <button class="bet-preset" onclick="setBet(0.5)">0.5</button>
+                            <button class="bet-preset" onclick="setBet(1)">1</button>
                         </div>
                     </div>
                     
@@ -650,7 +626,7 @@
                     
                     <div class="current-bet" id="currentBetDisplay" style="display: none;">
                         <span>Текущая ставка:</span>
-                        <span class="current-bet-value" id="currentBetValue">0 ⭐</span>
+                        <span class="current-bet-value" id="currentBetValue">0 TON</span>
                     </div>
                 </div>
                 
@@ -670,77 +646,44 @@
             </div>
         </div>
 
-        <!-- Вкладка магазина -->
-        <div class="tab-content" id="shopTab">
-            <div class="inventory-tab">
-                <div class="inventory-header">
-                    <span class="inventory-title">⭐ Магазин звезд</span>
+        <!-- Вкладка кошелька -->
+        <div class="tab-content" id="walletTab">
+            <div class="wallet-tab">
+                <div class="wallet-header">
+                    <span class="wallet-title">💎 TON кошелек</span>
                 </div>
                 
-                <div class="stars-shop">
-                    <div class="stars-pack" onclick="buyStars(50, 50)">
-                        <div class="pack-stars">50 ⭐</div>
-                        <div class="pack-price">50 звезд</div>
-                    </div>
-                    <div class="stars-pack" onclick="buyStars(100, 100)">
-                        <div class="pack-stars">100 ⭐</div>
-                        <div class="pack-price">100 звезд</div>
-                    </div>
-                    <div class="stars-pack" onclick="buyStars(250, 250)">
-                        <div class="pack-stars">250 ⭐</div>
-                        <div class="pack-price">250 звезд</div>
-                    </div>
-                    <div class="stars-pack" onclick="buyStars(500, 500)">
-                        <div class="pack-stars">500 ⭐</div>
-                        <div class="pack-price">500 звезд</div>
-                    </div>
-                    <div class="stars-pack" onclick="buyStars(1000, 1000)">
-                        <div class="pack-stars">1000 ⭐</div>
-                        <div class="pack-price">1000 звезд</div>
-                    </div>
-                    <div class="stars-pack" onclick="buyStars(2500, 2500)">
-                        <div class="pack-stars">2500 ⭐</div>
-                        <div class="pack-price">2500 звезд</div>
-                    </div>
+                <div class="wallet-address" id="walletAddress">
+                    Кошелек не подключен
                 </div>
                 
-                <div style="color: #aaa; font-size: 12px; text-align: center; margin-top: 20px;">
-                    💎 Все покупки совершаются через Telegram Stars<br>
-                    Мгновенное зачисление на баланс
-                </div>
-            </div>
-        </div>
-
-        <!-- Вкладка статистики -->
-        <div class="tab-content" id="statsTab">
-            <div class="inventory-tab">
-                <div class="inventory-header">
-                    <span class="inventory-title">📊 Моя статистика</span>
-                </div>
-                
-                <div class="stats-grid">
+                <div class="wallet-stats">
                     <div class="stat-card">
-                        <div class="stat-value" id="totalGames">0</div>
-                        <div class="stat-label">Всего игр</div>
+                        <div class="stat-value" id="walletBalance">0</div>
+                        <div class="stat-label">Баланс TON</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalBets">0</div>
+                        <div class="stat-label">Всего ставок</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-value" id="totalWins">0</div>
                         <div class="stat-label">Побед</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value" id="totalEarned">0</div>
-                        <div class="stat-label">Заработано ⭐</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="totalSpent">0</div>
-                        <div class="stat-label">Потрачено ⭐</div>
+                        <div class="stat-value" id="totalWon">0</div>
+                        <div class="stat-label">Выиграно TON</div>
                     </div>
                 </div>
                 
                 <div class="history-list">
-                    <div style="color: #aaa; margin-bottom: 15px;">📜 История игр</div>
-                    <div id="gameHistory"></div>
+                    <div style="color: #aaa; margin-bottom: 15px;">📜 История транзакций</div>
+                    <div id="transactionHistory"></div>
                 </div>
+                
+                <button class="place-bet-btn" onclick="disconnectWallet()" style="background: #ff4444; margin-top: 20px;">
+                    🔌 Отключить кошелек
+                </button>
             </div>
         </div>
     </div>
@@ -749,28 +692,23 @@
     <div class="bottom-nav">
         <div class="nav-buttons" id="navContainer">
             <button class="nav-btn" data-nav="game">🎰 Игра</button>
-            <button class="nav-btn" data-nav="shop">⭐ Магазин</button>
+            <button class="nav-btn" data-nav="wallet">💎 Кошелек</button>
             <button class="nav-btn" data-nav="stats">📊 Статистика</button>
             <button class="nav-btn" data-nav="profile">⚙️ Профиль</button>
-            <button class="nav-btn" data-nav="support">🆘 Поддержка</button> 
         </div>
     </div>
 </div>
 
 <script>
-    console.error = function() {};
     // Инициализация Telegram Web App
     const tg = window.Telegram.WebApp;
     tg.expand();
-    tg.enableClosingConfirmation();
 
     // Получаем информацию о пользователе
     const user = tg.initDataUnsafe?.user;
     const userId = user?.id?.toString() || 'guest_' + Math.random().toString(36).substr(2, 9);
-    const username = user?.username || 'player';
 
     // ========== 1. КОНФИГУРАЦИЯ FIREBASE ==========
-    // ЗДЕСЬ ВСТАВЬТЕ ВАШИ ДАННЫЕ ИЗ FIREBASE
     const firebaseConfig = {
         apiKey: "AIzaSyCYeELUnimdyjt0MRfNYfREkGfrt7gUnao",
         authDomain: "imtrierbot.firebaseapp.com",
@@ -781,15 +719,87 @@
         appId: "1:1062476104894:web:e00869e054a5f3628e0aef",
         measurementId: "G-QC8TLBE3V2"
       };
+
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
-
-    // Ссылки на данные пользователя
     const userRef = database.ref('users/' + userId);
     const statsRef = userRef.child('stats');
-    const historyRef = userRef.child('history');
 
-    // ========== 2. ДАННЫЕ ДЛЯ ЦВЕТНЫХ КАРТОЧЕК ==========
+    // ========== 2. TON CONNECT ==========
+    let tonConnector = null;
+    let walletConnected = false;
+    let walletAddress = '';
+    let tonBalance = 0;
+
+    const tonBalanceEl = document.getElementById('tonBalance');
+    const connectWalletBtn = document.getElementById('connectWalletBtn');
+    const walletAddressEl = document.getElementById('walletAddress');
+    const walletBalanceEl = document.getElementById('walletBalance');
+
+    // Функция подключения кошелька
+    window.connectWallet = function() {
+        if (walletConnected) {
+            showWalletInfo();
+            return;
+        }
+
+        // Инициализация TON Connect
+        tonConnector = new TonConnectSDK.TonConnect({
+            manifestUrl: 'https://your-domain.com/tonconnect-manifest.json'
+        });
+
+        tonConnector.onStatusChange(walletInfo => {
+            if (walletInfo) {
+                walletConnected = true;
+                walletAddress = walletInfo.account.address;
+                tonBalance = walletInfo.account.balance || 0;
+                
+                // Обновляем UI
+                connectWalletBtn.textContent = '✓ Кошелек подключен';
+                connectWalletBtn.classList.add('connected');
+                tonBalanceEl.textContent = tonBalance;
+                walletAddressEl.textContent = formatAddress(walletAddress);
+                walletBalanceEl.textContent = tonBalance;
+                
+                // Сохраняем в Firebase
+                userRef.child('wallet').set({
+                    address: walletAddress,
+                    connected: true
+                });
+            } else {
+                walletConnected = false;
+                walletAddress = '';
+                tonBalance = 0;
+                
+                connectWalletBtn.textContent = '🔌 Подключить кошелек';
+                connectWalletBtn.classList.remove('connected');
+                tonBalanceEl.textContent = '0';
+                walletAddressEl.textContent = 'Кошелек не подключен';
+                walletBalanceEl.textContent = '0';
+            }
+        });
+
+        // Открываем список кошельков
+        tonConnector.connect();
+    };
+
+    function formatAddress(address) {
+        if (!address) return '';
+        return address.slice(0, 6) + '...' + address.slice(-4);
+    }
+
+    function showWalletInfo() {
+        switchTab('wallet');
+    }
+
+    window.disconnectWallet = function() {
+        if (tonConnector) {
+            tonConnector.disconnect();
+        }
+        userRef.child('wallet').remove();
+    };
+
+    // ========== 3. ДАННЫЕ ДЛЯ ЦВЕТНЫХ КАРТОЧЕК ==========
     const coldColors = [
         { name: 'deep blue', hex: '#1E3A8A' },
         { name: 'cyan', hex: '#06B6D4' },
@@ -808,7 +818,7 @@
         { name: 'gold', hex: '#CA8A04' }
     ];
 
-    // ========== 3. ЗАПОЛНЕНИЕ РУЛЕТОК ==========
+    // ========== 4. ЗАПОЛНЕНИЕ РУЛЕТОК ==========
     function fillWheel(containerId, colorsArray) {
         const container = document.getElementById(containerId);
         if (!container) return;
@@ -826,29 +836,20 @@
     fillWheel('wheel1', coldColors);
     fillWheel('wheel2', warmColors);
 
-    // ========== 4. ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ==========
+    // ========== 5. ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ==========
     const gameTab = document.getElementById('gameTab');
-    const shopTab = document.getElementById('shopTab');
-    const statsTab = document.getElementById('statsTab');
+    const walletTab = document.getElementById('walletTab');
     const navButtons = document.querySelectorAll('.nav-btn');
     
     window.switchTab = function(tabId) {
         gameTab.classList.remove('active');
-        shopTab.classList.remove('active');
-        statsTab.classList.remove('active');
+        walletTab.classList.remove('active');
         
         if (tabId === 'game') {
             gameTab.classList.add('active');
-        } else if (tabId === 'shop') {
-            shopTab.classList.add('active');
-        } else if (tabId === 'stats') {
-            statsTab.classList.add('active');
-            loadStatistics();
-        }
-        else if (tabId === 'support') {
-            showPaySupport();
-            setTimeout(() => switchTab('game'), 2000);
-            return;
+        } else if (tabId === 'wallet') {
+            walletTab.classList.add('active');
+            loadWalletStats();
         }
         
         navButtons.forEach(btn => {
@@ -865,102 +866,61 @@
         });
     });
 
-    // ========== 5. ЛОГИКА ЗВЕЗД И ПЛАТЕЖЕЙ ==========
-    let starsBalance = 100; // Начальный баланс для новых игроков
+    // ========== 6. ЛОГИКА СТАВОК ==========
     let currentBet = 0;
-    const starsBalanceEl = document.getElementById('starsBalance');
     const betAmountInput = document.getElementById('betAmount');
     const placeBetBtn = document.getElementById('placeBetBtn');
     const currentBetDisplay = document.getElementById('currentBetDisplay');
     const currentBetValue = document.getElementById('currentBetValue');
 
-    // Загрузка баланса из Firebase
-    userRef.child('stars').once('value', (snapshot) => {
-        const savedStars = snapshot.val();
-        if (savedStars !== null) {
-            starsBalance = savedStars;
-        } else {
-            // Новый игрок, сохраняем начальный баланс
-            userRef.child('stars').set(starsBalance);
-        }
-        updateStarsDisplay();
-    });
-
-    function updateStarsDisplay() {
-        starsBalanceEl.textContent = starsBalance;
-    }
-
-    // Функция покупки звезд
-        window.buyStars = function(amount, price) {
-        // Без showPopup - сразу открываем инвойс
-        tg.openInvoice({
-            title: `Покупка ${amount} звезд`,
-            description: `Пополнение баланса для игры`,
-            payload: JSON.stringify({ 
-                type: 'stars_purchase',
-                amount: amount,
-                userId: userId 
-            }),
-            currency: 'XTR',
-            prices: [{ 
-                label: `${amount} ⭐`, 
-                amount: price
-            }]
-        }, (result) => {
-            console.log("Результат платежа:", result);
-            
-            if (result === 'paid') {
-                starsBalance += amount;
-                userRef.child('stars').set(starsBalance);
-                updateStarsDisplay();
-                alert(`✅ Баланс пополнен на ${amount} ⭐!`); // Используем alert вместо showPopup
-                switchTab('game');
-            } else if (result === 'cancelled') {
-                alert('❌ Платеж отменен');
-            } else if (result === 'failed') {
-                alert('❌ Ошибка платежа');
-            } else {
-                console.log('Неизвестный статус:', result);
-                alert(`❌ Статус: ${result}`);
-            }
-        });
-    };
-
-    // Установка суммы ставки через кнопки
     window.setBet = function(amount) {
         betAmountInput.value = amount;
     };
 
-    // Функция ставки
     window.placeBet = function() {
-        const betAmount = parseInt(betAmountInput.value);
-        
-        if (isNaN(betAmount) || betAmount < 10) {
-            tg.showAlert('Минимальная ставка: 10 ⭐');
+        if (!walletConnected) {
+            tg.showPopup({
+                title: 'Требуется кошелек',
+                message: 'Подключите TON кошелек чтобы сделать ставку',
+                buttons: [
+                    { text: 'Подключить', type: 'default' },
+                    { text: 'Отмена', type: 'cancel' }
+                ]
+            }, (buttonId) => {
+                if (buttonId === 'ok') {
+                    connectWallet();
+                }
+            });
             return;
         }
         
-        if (betAmount > 1000) {
-            tg.showAlert('Максимальная ставка: 1000 ⭐');
+        const betAmount = parseFloat(betAmountInput.value);
+        
+        if (isNaN(betAmount) || betAmount < 0.1) {
+            tg.showAlert('Минимальная ставка: 0.1 TON');
             return;
         }
         
-        if (betAmount > starsBalance) {
-            tg.showAlert('Недостаточно звезд! Купите в магазине.');
-            switchTab('shop');
+        if (betAmount > 100) {
+            tg.showAlert('Максимальная ставка: 100 TON');
+            return;
+        }
+        
+        if (betAmount > tonBalance) {
+            tg.showAlert('Недостаточно TON на балансе');
             return;
         }
         
         currentBet = betAmount;
-        currentBetValue.textContent = `${currentBet} ⭐`;
+        currentBetValue.textContent = `${currentBet} TON`;
         currentBetDisplay.style.display = 'flex';
         placeBetBtn.textContent = '✏️ Изменить ставку';
         placeBetBtn.style.background = '#2a2a2a';
         
-        tg.showAlert(`✅ Ставка ${currentBet} ⭐ принята!`);
+        tg.showAlert(`✅ Ставка ${currentBet} TON принята!`);
     };
 
-    // ========== 6. ИГРОВАЯ ЛОГИКА ==========
+    // ========== 7. ИГРОВАЯ ЛОГИКА ==========
     const playButton = document.getElementById('playButton');
     const player1Status = document.getElementById('player1Status');
     const player2Status = document.getElementById('player2Status');
@@ -969,13 +929,12 @@
     const onlineCountSpan = document.getElementById('onlineCount');
     const wheel1Result = document.getElementById('wheel1Result');
     const wheel2Result = document.getElementById('wheel2Result');
-
+    
     const wheel1Element = document.getElementById('wheel1');
     const wheel2Element = document.getElementById('wheel2');
 
-    // Определяем, за какой рулеткой закреплен игрок
     const myWheel = parseInt(userId.slice(-1)) % 2 === 0 ? 'wheel1' : 'wheel2';
-
+    
     if (myWheel === 'wheel1') {
         wheel1Indicator.innerHTML = '🎮 вы здесь';
         wheel1Indicator.classList.add('ready');
@@ -988,22 +947,18 @@
         wheel1Indicator.classList.remove('ready');
     }
 
-    // Регистрируем игрока в Firebase
     const playersRef = database.ref('players');
     const playerRef = playersRef.child(userId);
-
+    
     playerRef.set({
         id: userId,
-        username: username,
         wheel: myWheel,
         ready: false,
-        online: true,
-        lastSeen: Date.now()
+        online: true
     });
 
     playerRef.onDisconnect().remove();
 
-    // Слушаем изменения игроков
     playersRef.on('value', (snapshot) => {
         const players = snapshot.val() || {};
         const playerCount = Object.keys(players).length;
@@ -1043,7 +998,6 @@
         }
     });
 
-    // Функция определения текущего цвета под стрелкой
     function getCurrentColor(container, colorsArray) {
         if (!container) return null;
         const scrollLeft = container.scrollLeft;
@@ -1056,21 +1010,21 @@
         const color1 = getCurrentColor(wheel1Element, coldColors);
         const color2 = getCurrentColor(wheel2Element, warmColors);
         
-        if (color1) {
-            wheel1Result.textContent = `⚡ ${color1.name}`;
-        }
-        if (color2) {
-            wheel2Result.textContent = `🔥 ${color2.name}`;
-        }
+        if (color1) wheel1Result.textContent = `⚡ ${color1.name}`;
+        if (color2) wheel2Result.textContent = `🔥 ${color2.name}`;
     }
 
     wheel1Element.addEventListener('scroll', updateResults);
     wheel2Element.addEventListener('scroll', updateResults);
 
-    // Нажатие на кнопку "Играть"
     playButton.addEventListener('click', () => {
         if (currentBet === 0) {
             tg.showAlert('Сначала сделайте ставку!');
+            return;
+        }
+        
+        if (!walletConnected) {
+            tg.showAlert('Подключите кошелек!');
             return;
         }
         
@@ -1095,7 +1049,6 @@
         });
     });
 
-    // Функция запуска вращения
     function startSpin() {
         playButton.textContent = '⏳ КРУТИМ...';
         playButton.classList.remove('active');
@@ -1113,14 +1066,10 @@
             if (!startTime) startTime = currentTime;
             const elapsed = currentTime - startTime;
             const progress = Math.min(elapsed / duration, 1);
-            
             const easeOut = 1 - Math.pow(1 - progress, 3);
             
-            const current1 = target1 * easeOut;
-            const current2 = target2 * easeOut;
-            
-            wheel1Element.scrollLeft = current1;
-            wheel2Element.scrollLeft = current2;
+            wheel1Element.scrollLeft = target1 * easeOut;
+            wheel2Element.scrollLeft = target2 * easeOut;
             
             if (progress < 1) {
                 requestAnimationFrame(animate);
@@ -1134,7 +1083,6 @@
         requestAnimationFrame(animate);
     }
 
-    // Функция разрешения игры (определение победителя)
     function resolveGame() {
         const color1 = getCurrentColor(wheel1Element, coldColors);
         const color2 = getCurrentColor(wheel2Element, warmColors);
@@ -1145,18 +1093,13 @@
         const isWin = coldIndex === warmIndex;
         const winAmount = isWin ? currentBet * 2 : 0;
         
-        // Списываем ставку
-        starsBalance -= currentBet;
-        
         if (isWin) {
-            starsBalance += winAmount;
-            tg.showAlert(`🎉 СОВПАДЕНИЕ! Вы выиграли ${winAmount} ⭐`);
+            tg.showAlert(`🎉 ПОБЕДА! +${winAmount} TON`);
+            // Здесь будет реальная транзакция TON
         } else {
-            tg.showAlert(`😢 Нет совпадения. Проиграно ${currentBet} ⭐`);
+            tg.showAlert(`😢 Проигрыш: ${currentBet} TON`);
+            // Здесь будет списание TON
         }
-        
-        userRef.child('stars').set(starsBalance);
-        updateStarsDisplay();
         
         const gameResult = {
             date: Date.now(),
@@ -1167,93 +1110,29 @@
             color2: color2?.name
         };
         
-        historyRef.push(gameResult);
-        
-        statsRef.once('value', (snapshot) => {
-            const stats = snapshot.val() || { 
-                games: 0, 
-                wins: 0, 
-                earned: 0,
-                spent: 0 
-            };
-            
-            stats.games = (stats.games || 0) + 1;
-            stats.spent = (stats.spent || 0) + currentBet;
-            
-            if (isWin) {
-                stats.wins = (stats.wins || 0) + 1;
-                stats.earned = (stats.earned || 0) + winAmount;
-            }
-            
-            statsRef.set(stats);
-        });
+        database.ref('games/' + userId).push(gameResult);
         
         currentBet = 0;
         currentBetDisplay.style.display = 'none';
         placeBetBtn.textContent = '📥 Сделать ставку';
-        placeBetBtn.style.background = '#f0b400';
+        placeBetBtn.style.background = '#0088cc';
     }
 
-    // ========== 7. ЗАГРУЗКА СТАТИСТИКИ ==========
-    function loadStatistics() {
+    function loadWalletStats() {
         statsRef.once('value', (snapshot) => {
             const stats = snapshot.val() || { 
                 games: 0, 
                 wins: 0, 
-                earned: 0,
-                spent: 0 
+                won: 0 
             };
             
-            document.getElementById('totalGames').textContent = stats.games;
+            document.getElementById('totalBets').textContent = stats.games;
             document.getElementById('totalWins').textContent = stats.wins;
-            document.getElementById('totalEarned').textContent = stats.earned;
-            document.getElementById('totalSpent').textContent = stats.spent;
+            document.getElementById('totalWon').textContent = stats.won;
         });
-        
-        historyRef.limitToLast(10).once('value', (snapshot) => {
-            const history = snapshot.val() || {};
-            const historyList = document.getElementById('gameHistory');
-            historyList.innerHTML = '';
-            
-            Object.values(history).reverse().forEach(game => {
-                const date = new Date(game.date).toLocaleTimeString();
-                const item = document.createElement('div');
-                item.className = 'history-item';
-                item.innerHTML = `
-                    <span>${date} | ${game.color1} vs ${game.color2}</span>
-                    <span class="${game.result === 'win' ? 'history-win' : 'history-loss'}">
-                        ${game.amount > 0 ? '+' : ''}${game.amount} ⭐
-                    </span>
-                `;
-                historyList.appendChild(item);
-            });
-        });
-    }
-    // ========== 8. ПОДДЕРЖКА ПОЛЬЗОВАТЕЛЕЙ ==========
-    function showPaySupport() {
-        tg.showPopup({
-            title: 'Поддержка и возврат средств',
-            message: 'Добровольные пожертвования (покупка звезд) не подразумевают возврат средств, так как товар является цифровым и потребляемым мгновенно.\n\nЕсли у вас возникла техническая проблема, свяжитесь с нами: @YourSupportUsername',
-            buttons: [{
-                text: 'Понятно',
-                type: 'default'
-            }]
-        });
-    }
-    
-    // Проверяем, не открыто ли приложение с командой paysupport
-    if (tg.initDataUnsafe?.start_param === 'paysupport') {
-        setTimeout(() => {
-            showPaySupport();
-        }, 1000); // Небольшая задержка, чтобы приложение успело загрузиться
     }
 
-    // Устанавливаем начальную вкладку
     switchTab('game');
 </script>
 </body>
 </html>
-
-
-
-
