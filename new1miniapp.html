@@ -779,16 +779,14 @@
     let walletConnected = false;
     let walletAddress = '';
     let tonBalance = 0;
-
+    
     const tonBalanceEl = document.getElementById('tonBalance');
     const connectWalletBtn = document.getElementById('connectWalletBtn');
     const walletAddressEl = document.getElementById('walletAddress');
     const walletBalanceEl = document.getElementById('walletBalance');
-
-    // ВАШ АДРЕС ДЛЯ ПОЛУЧЕНИЯ СТАВОК
+    
     const RECIPIENT_ADDRESS = 'UQBjrnhS04mxMkEpYGngrd_UnypAFaQaKQcpf81BuQEJs1-i';
-
-    // Функция уведомлений
+    
     function showSimpleAlert(message) {
         if (tg && tg.showPopup) {
             tg.showPopup({
@@ -828,14 +826,14 @@
             setTimeout(() => div.remove(), 3000);
         }
     }
-
-    // Инициализация TON Connect UI
+    
+    // Функция инициализации TON Connect
     function initTonConnectUI() {
         if (typeof TON_CONNECT_UI === 'undefined') {
             console.error("TON Connect UI не загружен");
             return false;
         }
-
+    
         try {
             tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
                 manifestUrl: 'https://roman318-pr.github.io/ImTrierbot/tonconnect-manifest.json',
@@ -855,37 +853,37 @@
                         ]
                     },
                     actionsConfiguration: {
-                        twaReturnUrl: 'https://t.me/ImTrierbot/ImTrier'
+                        twaReturnUrl: 'https://t.me/ImTrierbot/app'
                     }
                 }
             });
-
+    
             console.log("TON Connect UI инициализирован");
-
+    
             tonConnectUI.onStatusChange((walletInfo) => {
                 console.log("Статус кошелька:", walletInfo);
-
+    
                 if (walletInfo && walletInfo.account) {
                     walletConnected = true;
                     walletAddress = walletInfo.account.address;
-
+    
                     fetchTONBalance(walletAddress);
-
+    
                     connectWalletBtn.textContent = '✓ Кошелек подключен';
                     connectWalletBtn.classList.add('connected');
                     walletAddressEl.textContent = formatAddress(walletAddress);
-
+    
                     userRef.child('wallet').set({
                         address: walletAddress,
                         connected: true
                     });
-
+    
                     showSimpleAlert('✅ Кошелек успешно подключен!');
                 } else {
                     walletConnected = false;
                     walletAddress = '';
                     tonBalance = 0;
-
+    
                     connectWalletBtn.textContent = '🔌 Подключить кошелек';
                     connectWalletBtn.classList.remove('connected');
                     tonBalanceEl.textContent = '0';
@@ -893,15 +891,15 @@
                     walletBalanceEl.textContent = '0';
                 }
             });
-
+    
             return true;
         } catch (error) {
             console.error("Ошибка инициализации:", error);
             return false;
         }
     }
-
-    // Функция подключения кошелька
+    
+    // Функция подключения кошелька (та, которую не находит)
     window.connectWallet = async function() {
         console.log("Подключение кошелька...");
     
@@ -922,31 +920,31 @@
             showSimpleAlert('❌ Ошибка подключения');
         }
     };
-
+    
     window.disconnectWallet = function() {
         if (tonConnectUI) {
             tonConnectUI.disconnect();
         }
-
+    
         walletConnected = false;
         walletAddress = '';
         tonBalance = 0;
-
+    
         connectWalletBtn.textContent = '🔌 Подключить кошелек';
         connectWalletBtn.classList.remove('connected');
         tonBalanceEl.textContent = '0';
         walletAddressEl.textContent = 'Кошелек не подключен';
         walletBalanceEl.textContent = '0';
-
+    
         userRef.child('wallet').remove();
         showSimpleAlert('🔌 Кошелек отключен');
     };
-
+    
     async function fetchTONBalance(address) {
         try {
             const response = await fetch(`https://toncenter.com/api/v2/getAddressBalance?address=${address}`);
             const data = await response.json();
-
+    
             if (data.ok) {
                 tonBalance = data.result / 1e9;
                 tonBalanceEl.textContent = tonBalance.toFixed(2);
@@ -956,116 +954,11 @@
             console.error("Ошибка баланса:", error);
         }
     }
-
+    
     function formatAddress(address) {
         if (!address) return 'Кошелек не подключен';
         return address.slice(0, 6) + '...' + address.slice(-4);
     }
-
-    // ========== 2.5 NFT ИНВЕНТАРЬ ==========
-    const API_URL = 'https://nft-gift-server.onrender.com';
-    let userNFTs = [];
-    let selectedNFT = null;
-    
-    // Загрузка NFT пользователя
-    async function loadUserNFTs() {
-        if (!userId) return;
-        
-        try {
-            const response = await fetch(`${API_URL}/api/user/${userId}/nfts`);
-            if (!response.ok) throw new Error('Ошибка загрузки');
-            
-            userNFTs = await response.json();
-            renderNFTGrid();
-        } catch (error) {
-            console.error('Ошибка загрузки NFT:', error);
-            document.getElementById('nftGrid').innerHTML = `
-                <div style="text-align: center; color: #ff4444; padding: 20px; grid-column: span 2;">
-                    ❌ Ошибка загрузки
-                </div>
-            `;
-        }
-    }
-    
-    // Отображение сетки NFT
-    function renderNFTGrid() {
-        const grid = document.getElementById('nftGrid');
-        if (!grid) return;
-        
-        if (!userNFTs || userNFTs.length === 0) {
-            grid.innerHTML = `
-                <div style="text-align: center; color: #aaa; padding: 20px; grid-column: span 2;">
-                    😢 У вас пока нет NFT<br>
-                    <span style="font-size: 11px;">Отправьте подарок на @ImTrierbot</span>
-                </div>
-            `;
-            return;
-        }
-        
-        grid.innerHTML = '';
-        userNFTs.forEach((nft, index) => {
-            if (nft.staked) return;
-            
-            const card = document.createElement('div');
-            card.className = `nft-card ${selectedNFT === index ? 'selected' : ''}`;
-            card.onclick = () => selectNFT(index);
-            card.innerHTML = `
-                <div class="nft-image">${nft.image || '🎨'}</div>
-                <div class="nft-name">${nft.name}</div>
-                <div class="nft-collection">${nft.collection}</div>
-                <div class="nft-price">${nft.priceTON} TON</div>
-            `;
-            grid.appendChild(card);
-        });
-    }
-    
-    function selectNFT(index) {
-        selectedNFT = index;
-        renderNFTGrid();
-    }
-    
-    // Ставка NFT
-    window.stakeNFT = async function(color) {
-        if (selectedNFT === null) {
-            showSimpleAlert('❌ Сначала выберите NFT');
-            return;
-        }
-        
-        const nft = userNFTs[selectedNFT];
-        
-        try {
-            const response = await fetch(`${API_URL}/api/nft/${nft.id}/stake`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId: userId,
-                    color: color,
-                    stake: true
-                })
-            });
-            
-            if (response.ok) {
-                nft.staked = true;
-                nft.betColor = color;
-                
-                if (!currentBets[color]) currentBets[color] = { total: 0, nfts: [] };
-                currentBets[color].total += nft.priceTON;
-                currentBets[color].nfts = currentBets[color].nfts || [];
-                currentBets[color].nfts.push(nft);
-                
-                selectedNFT = null;
-                renderNFTGrid();
-                updateBetsUI();
-                
-                showSimpleAlert(`✅ NFT поставлен на ${color}!`);
-            }
-        } catch (error) {
-            showSimpleAlert('❌ Ошибка при ставке NFT');
-        }
-    };
-    
-    // Загружаем NFT при старте
-    loadUserNFTs();
     // ========== 3. ЦВЕТНЫЕ КАРТОЧКИ ==========
     const colors = [
         { name: 'deep blue', hex: '#1E3A8A' },
@@ -1538,6 +1431,7 @@
 </script>
 </body>
 </html>
+
 
 
 
