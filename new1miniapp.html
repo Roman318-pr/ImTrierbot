@@ -622,6 +622,19 @@
                     </div>
                 </div>
 
+                <!-- Инвентарь NFT -->
+                <div class="nft-inventory">
+                    <div class="nft-header">
+                        <span class="nft-title">🎨 Мои NFT</span>
+                        <button class="nft-refresh" onclick="loadUserNFTs()">🔄</button>
+                    </div>
+                    <div class="nft-grid" id="nftGrid">
+                        <div style="text-align: center; color: #aaa; padding: 20px; grid-column: span 2;">
+                            Загрузка NFT...
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Кнопка игры -->
                 <div class="play-area">
                     <button class="play-button" id="playButton">▶ ИГРАТЬ</button>
@@ -1513,5 +1526,6 @@
 </script>
 </body>
 </html>
+
 
 
