@@ -529,6 +529,94 @@
             background: #2a2a2a;
         }
 
+        /* NFT инвентарь */
+        .nft-inventory {
+            background: #0f0f0f;
+            border-radius: 30px;
+            margin: 10px 20px;
+            padding: 15px;
+            border: 1px solid #2a2a2a;
+        }
+
+        .nft-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .nft-title {
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .nft-refresh {
+            background: #2a2a2a;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 30px;
+            color: #aaa;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .nft-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .nft-card {
+            background: #1a1a1a;
+            border-radius: 20px;
+            padding: 12px;
+            border: 1px solid #333;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .nft-card:hover {
+            border-color: #0088cc;
+            transform: scale(1.02);
+        }
+        .nft-card.selected {
+            border: 2px solid #2ecc71;
+            box-shadow: 0 0 15px #2ecc71;
+        }
+
+        .nft-image {
+            width: 100%;
+            height: 80px;
+            background: #2a2a2a;
+            border-radius: 15px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+
+        .nft-name {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .nft-collection {
+            font-size: 10px;
+            color: #aaa;
+            margin-bottom: 4px;
+        }
+
+        .nft-price {
+            font-size: 12px;
+            font-weight: bold;
+            color: #2ecc71;
+        }
+
         @media (max-width: 380px) {
             .color-card {
                 width: 75px;
@@ -607,6 +695,19 @@
                     <div class="bet-info">
                         <span>⚡ Ваша ставка: <span id="yourBets">0</span> TON</span>
                         <span>📊 Всего ставок: <span id="totalBets">0</span></span>
+                    </div>
+                </div>
+
+                                <!-- Инвентарь NFT -->
+                <div class="nft-inventory">
+                    <div class="nft-header">
+                        <span class="nft-title">🎨 Мои NFT</span>
+                        <button class="nft-refresh" onclick="loadUserNFTs()">🔄</button>
+                    </div>
+                    <div class="nft-grid" id="nftGrid">
+                        <div style="text-align: center; color: #aaa; padding: 20px; grid-column: span 2;">
+                            Загрузка NFT...
+                        </div>
                     </div>
                 </div>
 
@@ -909,6 +1010,106 @@
         return address.slice(0, 6) + '...' + address.slice(-4);
     }
 
+        // ========== 2.5 NFT ИНВЕНТАРЬ ==========
+    const API_URL = 'https://nft-gift-server.onrender.com';
+    let userNFTs = [];
+    let selectedNFT = null;
+
+    // Загрузка NFT пользователя
+    async function loadUserNFTs() {
+        if (!userId) return;
+        
+        try {
+            const response = await fetch(`${API_URL}/api/user/${userId}/nfts`);
+            if (!response.ok) throw new Error('Ошибка загрузки');
+            
+            userNFTs = await response.json();
+            renderNFTGrid();
+        } catch (error) {
+            console.error('Ошибка загрузки NFT:', error);
+        }
+    }
+
+    // Отображение сетки NFT
+    function renderNFTGrid() {
+        const grid = document.getElementById('nftGrid');
+        if (!grid) return;
+        
+        if (!userNFTs || userNFTs.length === 0) {
+            grid.innerHTML = `
+                <div style="text-align: center; color: #aaa; padding: 20px; grid-column: span 2;">
+                    😢 У вас пока нет NFT<br>
+                    <span style="font-size: 11px;">Отправьте подарок на @ImTrierbot</span>
+                </div>
+            `;
+            return;
+        }
+        
+        grid.innerHTML = '';
+        userNFTs.forEach((nft, index) => {
+            if (nft.staked) return;
+            
+            const card = document.createElement('div');
+            card.className = `nft-card ${selectedNFT === index ? 'selected' : ''}`;
+            card.onclick = () => selectNFT(index);
+            card.innerHTML = `
+                <div class="nft-image">${nft.image || '🎨'}</div>
+                <div class="nft-name">${nft.name}</div>
+                <div class="nft-collection">${nft.collection}</div>
+                <div class="nft-price">${nft.priceTON} TON</div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function selectNFT(index) {
+        selectedNFT = index;
+        renderNFTGrid();
+    }
+
+    // Ставка NFT
+    window.stakeNFT = async function(color) {
+        if (selectedNFT === null) {
+            showSimpleAlert('❌ Сначала выберите NFT');
+            return;
+        }
+        
+        const nft = userNFTs[selectedNFT];
+        
+        try {
+            const response = await fetch(`${API_URL}/api/nft/${nft.id}/stake`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: userId,
+                    color: color,
+                    stake: true
+                })
+            });
+            
+            if (response.ok) {
+                nft.staked = true;
+                nft.betColor = color;
+                
+                if (!currentBets[color]) currentBets[color] = { total: 0, players: {}, nfts: [] };
+                currentBets[color].total += nft.priceTON;
+                currentBets[color].nfts = currentBets[color].nfts || [];
+                currentBets[color].nfts.push(nft);
+                
+                selectedNFT = null;
+                renderNFTGrid();
+                updateBetsUI();
+                
+                showSimpleAlert(`✅ NFT поставлен на ${color}!`);
+            }
+        } catch (error) {
+            showSimpleAlert('❌ Ошибка при ставке NFT');
+        }
+    };
+
+    // Загружаем NFT при старте
+    loadUserNFTs();
+
     // ========== 3. ЦВЕТНЫЕ КАРТОЧКИ ==========
     const colors = [
         { name: 'deep blue', hex: '#1E3A8A' },
@@ -1031,8 +1232,16 @@
         }
     }
 
-    window.placeBetOnColor = async function(color) {
+        window.placeBetOnColor = async function(color) {
+        // Если выбран NFT, ставим его
+        if (selectedNFT !== null) {
+            await stakeNFT(color);
+            return;
+        }
+        
+        // Иначе обычная TON ставка
         const betAmount = parseFloat(betAmountInput.value);
+        
         if (isNaN(betAmount) || betAmount < 0.1) {
             showSimpleAlert('Минимальная ставка: 0.1 TON');
             return;
@@ -1263,3 +1472,4 @@
 </script>
 </body>
 </html>
+
