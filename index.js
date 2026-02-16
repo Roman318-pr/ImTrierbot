@@ -112,6 +112,71 @@ app.post('/api/nft/:nftId/stake', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+// Возврат NFT
+app.post('/api/nft/:nftId/return', async (req, res) => {
+    const { nftId } = req.params;
+    const { userId, staked } = req.body;
+    
+    try {
+        const nftRef = db.ref(`users/${userId}/nfts/${nftId}`);
+        await nftRef.update({
+            staked: staked,
+            betColor: null,
+            stakedAt: null
+        });
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Передача NFT
+app.post('/api/nft/:nftId/transfer', async (req, res) => {
+    const { nftId } = req.params;
+    const { newOwnerId } = req.body;
+    
+    try {
+        // Получаем данные NFT
+        const snapshot = await db.ref('users').once('value');
+        const users = snapshot.val();
+        
+        // Ищем где сейчас NFT
+        for (let [ownerId, userData] of Object.entries(users)) {
+            if (userData.nfts && userData.nfts[nftId]) {
+                const nftData = userData.nfts[nftId];
+                
+                // Удаляем у старого владельца
+                await db.ref(`users/${ownerId}/nfts/${nftId}`).remove();
+                
+                // Добавляем новому владельцу
+                await db.ref(`users/${newOwnerId}/nfts/${nftId}`).set({
+                    ...nftData,
+                    staked: false,
+                    betColor: null,
+                    stakedAt: null
+                });
+                
+                return res.json({ success: true });
+            }
+        }
+        res.json({ success: false, error: 'NFT not found' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Удаление NFT (после передачи)
+app.post('/api/nft/:nftId/remove', async (req, res) => {
+    const { nftId } = req.params;
+    const { userId } = req.body;
+    
+    try {
+        await db.ref(`users/${userId}/nfts/${nftId}`).remove();
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
 // Получение информации о NFT из Tonnel
 app.get('/api/nft/:address/info', async (req, res) => {
@@ -165,3 +230,4 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`🔥 Firebase: ${process.env.FIREBASE_DATABASE_URL ? '✅' : '❌'}`);
     console.log('=================================');
 });
+
