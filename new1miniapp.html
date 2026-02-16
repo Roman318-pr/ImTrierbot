@@ -948,6 +948,31 @@
         return address.slice(0, 6) + '...' + address.slice(-4);
     }
 
+    // ========== 2.5 ЗАГРУЗКА NFT С БЭКЕНДА ==========
+    const API_URL = 'https://nft-gift-server.onrender.com';
+    
+    async function loadUserNFTs() {
+        if (!userId) return;
+        
+        try {
+            const response = await fetch(`${API_URL}/api/user/${userId}/nfts`);
+            if (!response.ok) {
+                throw new Error('Ошибка загрузки');
+            }
+            const nfts = await response.json();
+            console.log("Загружено NFT:", nfts);
+            
+            // Здесь будет код для отображения NFT в инвентаре
+            // (его нужно будет добавить позже)
+            
+        } catch (error) {
+            console.error("Ошибка загрузки NFT:", error);
+        }
+    }
+    
+    // Вызываем загрузку при старте
+    loadUserNFTs();
+
     // ========== 3. ЦВЕТНЫЕ КАРТОЧКИ ==========
     const colors = [
         { name: 'deep blue', hex: '#1E3A8A' },
@@ -1412,3 +1437,4 @@
 </script>
 </body>
 </html>
+
