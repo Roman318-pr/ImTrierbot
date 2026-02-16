@@ -1,26 +1,10 @@
 const express = require('express');
 const admin = require('firebase-admin');
 const axios = require('axios');
-const cron = require('node-cron');
-const winston = require('winston');
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// ========== 1. НАСТРОЙКА ЛОГИРОВАНИЯ ==========
-const logger = winston.createLogger({
-    level: 'info',
-    format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json()
-    ),
-    transports: [
-        new winston.transports.File({ filename: 'error.log', level: 'error' }),
-        new winston.transports.File({ filename: 'combined.log' }),
-        new winston.transports.Console({ format: winston.format.simple() })
-    ]
-});
-
-// ========== 2. ИНИЦИАЛИЗАЦИЯ FIREBASE ==========
+// ========== 1. ИНИЦИАЛИЗАЦИЯ FIREBASE ==========
 let db;
 try {
     const serviceAccount = {
@@ -31,26 +15,25 @@ try {
         "client_email": process.env.FIREBASE_CLIENT_EMAIL,
         "client_id": process.env.FIREBASE_CLIENT_ID,
         "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token"
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs"
     };
 
     admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
         databaseURL: process.env.FIREBASE_DATABASE_URL
     });
+    
     db = admin.database();
-    logger.info('✅ Firebase успешно инициализирован');
+    console.log('✅ Firebase успешно инициализирован');
 } catch (error) {
-    logger.error('❌ Ошибка инициализации Firebase:', error);
+    console.error('❌ Ошибка инициализации Firebase:', error);
 }
 
-// ========== 3. MIDDLEWARE ==========
 app.use(express.json());
 
-// ========== 4. КЭШ ДЛЯ ТРАНЗАКЦИЙ ==========
-const processedTransactions = new Set();
-
-// ========== 5. API ЭНДПОИНТЫ ==========
+// ========== 2. API ЭНДПОИНТЫ ==========
 
 // Проверка здоровья
 app.get('/api/health', (req, res) => {
@@ -78,21 +61,15 @@ app.get('/api/user/:userId/nfts', async (req, res) => {
         
         res.json(nftsArray);
     } catch (error) {
-        logger.error('Ошибка получения NFT:', error);
+        console.error('Ошибка получения NFT:', error);
         res.status(500).json({ error: error.message });
     }
 });
 
-// Добавление NFT пользователю (для админа)
+// Добавление NFT (для админа)
 app.post('/api/user/:userId/nfts/add', async (req, res) => {
     const userId = req.params.userId;
     const { name, collection, image, priceTON } = req.body;
-    
-    // Проверка админского ключа
-    const adminKey = req.headers['x-admin-key'];
-    if (adminKey !== process.env.ADMIN_KEY) {
-        return res.status(403).json({ error: 'Forbidden' });
-    }
     
     try {
         const nftId = `nft_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -108,10 +85,10 @@ app.post('/api/user/:userId/nfts/add', async (req, res) => {
             receivedAt: Date.now()
         });
         
-        logger.info(`NFT добавлен пользователю ${userId}`);
+        console.log(`✅ NFT добавлен пользователю ${userId}`);
         res.json({ success: true, nftId });
     } catch (error) {
-        logger.error('Ошибка добавления NFT:', error);
+        console.error('Ошибка добавления NFT:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -131,36 +108,20 @@ app.post('/api/nft/:nftId/stake', async (req, res) => {
         
         res.json({ success: true });
     } catch (error) {
-        logger.error('Ошибка обновления NFT:', error);
+        console.error('Ошибка обновления NFT:', error);
         res.status(500).json({ error: error.message });
     }
 });
 
-// Получение информации о NFT по адресу
+// Получение информации о NFT из Tonnel
 app.get('/api/nft/:address/info', async (req, res) => {
-    const address = req.params.address;
-    
     try {
-        // Запрос к Tonnel API для получения информации
         const response = await axios.post('https://market.tonnel.network/api/gifts/getGifts', {
-            address: address,
+            address: req.params.address,
             limit: 1
         });
-        
-        if (response.data && response.data[0]) {
-            const nft = response.data[0];
-            res.json({
-                name: nft.name || 'Unknown NFT',
-                collection: nft.collection_name || 'Unknown',
-                image: nft.image || '🎨',
-                priceTON: nft.price || 0,
-                model: nft.model
-            });
-        } else {
-            res.json(null);
-        }
+        res.json(response.data[0] || null);
     } catch (error) {
-        logger.error('Ошибка получения информации NFT:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -191,17 +152,16 @@ app.get('/api/collections/prices', async (req, res) => {
         
         res.json(prices);
     } catch (error) {
-        logger.error('Ошибка получения цен:', error);
+        console.error('Ошибка получения цен:', error);
         res.status(500).json({ error: error.message });
     }
 });
 
-// ========== 6. ЗАПУСК СЕРВЕРА ==========
+// ========== 3. ЗАПУСК СЕРВЕРА ==========
 app.listen(PORT, '0.0.0.0', () => {
-    logger.info(`✅ NFT Gift Server запущен на порту ${PORT}`);
     console.log('=================================');
-    console.log('🎰 NFT Gift Server готов к работе');
+    console.log('🎰 NFT Gift Server запущен');
     console.log(`📡 Порт: ${PORT}`);
-    console.log(`🔥 Firebase: ${process.env.FIREBASE_DATABASE_URL ? 'подключен' : 'не подключен'}`);
+    console.log(`🔥 Firebase: ${process.env.FIREBASE_DATABASE_URL ? '✅' : '❌'}`);
     console.log('=================================');
 });
