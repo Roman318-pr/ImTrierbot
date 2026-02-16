@@ -978,6 +978,11 @@
             renderNFTGrid();
         } catch (error) {
             console.error('Ошибка загрузки NFT:', error);
+            document.getElementById('nftGrid').innerHTML = `
+                <div style="text-align: center; color: #ff4444; padding: 20px; grid-column: span 2;">
+                    ❌ Ошибка загрузки
+                </div>
+            `;
         }
     }
     
@@ -998,7 +1003,7 @@
         
         grid.innerHTML = '';
         userNFTs.forEach((nft, index) => {
-            if (nft.staked) return; // Не показываем поставленные NFT
+            if (nft.staked) return;
             
             const card = document.createElement('div');
             card.className = `nft-card ${selectedNFT === index ? 'selected' : ''}`;
@@ -1013,13 +1018,12 @@
         });
     }
     
-    // Выбор NFT
     function selectNFT(index) {
         selectedNFT = index;
         renderNFTGrid();
     }
     
-    // Обновленная функция ставки NFT
+    // Ставка NFT
     window.stakeNFT = async function(color) {
         if (selectedNFT === null) {
             showSimpleAlert('❌ Сначала выберите NFT');
@@ -1043,7 +1047,6 @@
                 nft.staked = true;
                 nft.betColor = color;
                 
-                // Добавляем в ставки
                 if (!currentBets[color]) currentBets[color] = { total: 0, nfts: [] };
                 currentBets[color].total += nft.priceTON;
                 currentBets[color].nfts = currentBets[color].nfts || [];
@@ -1202,6 +1205,14 @@
 
     // Ставка на цвет
     window.placeBetOnColor = async function(color) {
+        // Если выбран NFT, ставим его
+        if (selectedNFT !== null) {
+            await stakeNFT(color);
+            return;
+        }
+    
+    // Иначе обычная TON ставка
+    const betAmount = parseFloat(betAmountInput.value);
         const betAmount = parseFloat(betAmountInput.value);
 
         if (isNaN(betAmount) || betAmount < 0.1) {
@@ -1526,6 +1537,7 @@
 </script>
 </body>
 </html>
+
 
 
 
