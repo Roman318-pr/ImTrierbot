@@ -356,7 +356,7 @@ app.get('/api/nft/:address', async (req, res) => {
 // Запуск сервера
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    logger.info(`Сервер запущен на порту ${PORT}`);
+    console.log(`Сервер запущен на порту ${PORT}`);
 });
 
 // ========== 7. ПЕРИОДИЧЕСКИЕ ЗАДАЧИ ==========
@@ -390,4 +390,5 @@ console.log('NFT Gift Server запущен');
 console.log(`Порт: ${PORT}`);
 console.log(`Адрес получателя: ${process.env.RECEIVER_ADDRESS}`);
 console.log(`Интервал проверки: ${process.env.CHECK_INTERVAL || 60000}ms`);
+
 console.log('=================================');
