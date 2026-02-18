@@ -673,28 +673,25 @@
                     </div>
                 </div>
 
+                                <!-- Область ставок -->
                 <div class="bet-area">
                     <div class="bet-title">
                         <span>💰 Выберите цвет</span>
-                        <span>Банк: <span id="totalPool">0</span> TON</span>
+                        <span>Банк: <span id="totalPool">0</span> ⭐ рейтинга</span>
                     </div>
 
                     <div class="color-bet-grid">
-                        <button class="color-bet-btn" style="background: #1E3A8A;" onclick="placeBetOnColor('deep blue')">🔵 Синий</button>
-                        <button class="color-bet-btn" style="background: #06B6D4;" onclick="placeBetOnColor('cyan')">🩵 Голубой</button>
-                        <button class="color-bet-btn" style="background: #4F46E5;" onclick="placeBetOnColor('indigo')">💜 Индиго</button>
-                        <button class="color-bet-btn" style="background: #14B8A6;" onclick="placeBetOnColor('teal')">💚 Бирюза</button>
-                        <button class="color-bet-btn" style="background: #0284C7;" onclick="placeBetOnColor('sky')">💙 Небесный</button>
-                        <button class="color-bet-btn" style="background: #6D28D9;" onclick="placeBetOnColor('violet')">💜 Фиолетовый</button>
-                    </div>
-
-                    <div class="bet-controls">
-                        <input type="number" class="bet-input" id="betAmount" value="0.1" min="0.1" max="100" step="0.1">
+                        <button class="color-bet-btn" style="background: #1E3A8A;" onclick="selectColor('deep blue')">🔵 Синий</button>
+                        <button class="color-bet-btn" style="background: #06B6D4;" onclick="selectColor('cyan')">🩵 Голубой</button>
+                        <button class="color-bet-btn" style="background: #4F46E5;" onclick="selectColor('indigo')">💜 Индиго</button>
+                        <button class="color-bet-btn" style="background: #14B8A6;" onclick="selectColor('teal')">💚 Бирюза</button>
+                        <button class="color-bet-btn" style="background: #0284C7;" onclick="selectColor('sky')">💙 Небесный</button>
+                        <button class="color-bet-btn" style="background: #6D28D9;" onclick="selectColor('violet')">💜 Фиолетовый</button>
                     </div>
 
                     <div class="bet-info">
-                        <span>⚡ Ваша ставка: <span id="yourBets">0</span> TON</span>
-                        <span>📊 Всего ставок: <span id="totalBets">0</span></span>
+                        <span>⚡ Выбран цвет: <span id="selectedColor">—</span></span>
+                        <span>📊 Всего ставок: <span id="totalBets">0</span> ⭐</span>
                     </div>
                 </div>
 
@@ -1018,11 +1015,11 @@
     // Загрузка NFT пользователя
     async function loadUserNFTs() {
         if (!userId) return;
-        
+
         try {
             const response = await fetch(`${API_URL}/api/user/${userId}/nfts`);
             if (!response.ok) throw new Error('Ошибка загрузки');
-            
+
             userNFTs = await response.json();
             renderNFTGrid();
         } catch (error) {
@@ -1030,11 +1027,64 @@
         }
     }
 
+        // ========== 2.6 РЕЙТИНГ GIFT-ОВ ==========
+    // Стоимость Gift-ов в TON (актуальные цены с рынка)
+    const GIFT_RATINGS = {
+        'Plush Pepe': {
+            'Classic': 4200,
+            'Rare': 8500,
+            'Epic': 15000,
+            'Legendary': 30000
+        },
+        'Durov Cap': {
+            'Classic': 885,
+            'Rare': 2000,
+            'Epic': 5000,
+            'Legendary': 12000
+        },
+        'Heart Locket': {
+            'Silver': 896,
+            'Gold': 2500,
+            'Rose': 4000,
+            'Diamond': 10000
+        },
+        'Toy Bear': {
+            'Classic': 12.9,
+            'Wizard': 30,
+            'Zebra': 45,
+            'Panda': 80,
+            'Golden': 200
+        },
+        'Swiss Watch': {
+            'Classic': 67,
+            'Gold': 150,
+            'Platinum': 300
+        }
+    };
+
+    // Получить рейтинг Gift-а
+    function getGiftRating(collection, model) {
+        try {
+            if (GIFT_RATINGS[collection] && GIFT_RATINGS[collection][model]) {
+                return GIFT_RATINGS[collection][model];
+            }
+            // Если точной модели нет, возвращаем среднее
+            const values = Object.values(GIFT_RATINGS[collection] || {});
+            if (values.length > 0) {
+                return values.reduce((a, b) => a + b, 0) / values.length;
+            }
+            return 10; // базовое значение
+        } catch (error) {
+            console.error('Ошибка получения рейтинга:', error);
+            return 10;
+        }
+    }
+
     // Отображение сетки NFT
     function renderNFTGrid() {
         const grid = document.getElementById('nftGrid');
         if (!grid) return;
-        
+
         if (!userNFTs || userNFTs.length === 0) {
             grid.innerHTML = `
                 <div style="text-align: center; color: #aaa; padding: 20px; grid-column: span 2;">
@@ -1044,19 +1094,22 @@
             `;
             return;
         }
-        
+
         grid.innerHTML = '';
-        userNFTs.forEach((nft, index) => {
-            if (nft.staked) return;
-            
+        userNFTs.forEach((gift, index) => {
+            if (gift.staked) return;
+
+            // Получаем рейтинг подарка
+            const rating = getGiftRating(gift.collection, gift.model || gift.name);
+
             const card = document.createElement('div');
             card.className = `nft-card ${selectedNFT === index ? 'selected' : ''}`;
             card.onclick = () => selectNFT(index);
             card.innerHTML = `
-                <div class="nft-image">${nft.image || '🎨'}</div>
-                <div class="nft-name">${nft.name}</div>
-                <div class="nft-collection">${nft.collection}</div>
-                <div class="nft-price">${nft.priceTON} TON</div>
+                <div class="nft-image">${gift.image || '🎨'}</div>
+                <div class="nft-name">${gift.name}</div>
+                <div class="nft-collection">${gift.collection} ${gift.model || ''}</div>
+                <div class="nft-price">⭐ ${rating} рейтинга</div>
             `;
             grid.appendChild(card);
         });
@@ -1069,23 +1122,27 @@
 
     // Ставка NFT
         // Ставка NFT
+        // Ставка NFT (Gift)
     window.stakeNFT = async function(color) {
         if (selectedNFT === null) {
-            showSimpleAlert('❌ Сначала выберите NFT');
+            showSimpleAlert('❌ Сначала выберите подарок');
             return;
         }
-        
-        const nft = userNFTs[selectedNFT];
-        
-        // Проверяем, не поставлен ли уже NFT
-        if (nft.staked) {
-            showSimpleAlert('❌ Этот NFT уже поставлен');
+
+        const gift = userNFTs[selectedNFT];
+
+        // Проверяем, не поставлен ли уже Gift
+        if (gift.staked) {
+            showSimpleAlert('❌ Этот подарок уже поставлен');
             return;
         }
-        
+
+        // Получаем рейтинг подарка
+        const rating = getGiftRating(gift.collection, gift.model || gift.name);
+
         try {
             // Отправляем запрос на сервер
-            const response = await fetch(`${API_URL}/api/nft/${nft.id}/stake`, {
+            const response = await fetch(`${API_URL}/api/nft/${gift.id}/stake`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1094,43 +1151,103 @@
                     stake: true
                 })
             });
-            
+
             if (response.ok) {
                 // Обновляем локальные данные
-                nft.staked = true;
-                nft.betColor = color;
-                
-                // Добавляем NFT в текущие ставки
-                if (!currentBets[color].nfts) {
-                    currentBets[color].nfts = [];
+                gift.staked = true;
+                gift.betColor = color;
+                gift.rating = rating; // сохраняем рейтинг
+
+                // Добавляем Gift в текущие ставки
+                if (!currentBets[color].gifts) {
+                    currentBets[color].gifts = [];
                 }
-                
-                currentBets[color].nfts.push({
-                    id: nft.id,
-                    name: nft.name,
-                    priceTON: nft.priceTON,
+
+                currentBets[color].gifts.push({
+                    id: gift.id,
+                    name: gift.name,
+                    collection: gift.collection,
+                    model: gift.model,
+                    rating: rating,
                     owner: userId
                 });
-                currentBets[color].totalNFTs = (currentBets[color].totalNFTs || 0) + 1;
-                
+
+                // Общий рейтинг на этом цвете
+                currentBets[color].totalRating = (currentBets[color].totalRating || 0) + rating;
+
                 // Обновляем UI
                 selectedNFT = null;
+                selectedColor = null;
+                document.getElementById('selectedColor').textContent = '—';
                 renderNFTGrid();
-                
-                showSimpleAlert(`✅ NFT ${nft.name} поставлен на ${color}!`);
-                
-                // Сохраняем ставки в Firebase для синхронизации с другими игроками
-                await database.ref('nftBets/' + gameId).set({
-                    [color]: currentBets[color].nfts
+                updateBetsUI();
+
+                showSimpleAlert(`✅ ${gift.name} поставлен на ${color}! Рейтинг: ${rating} ⭐`);
+
+                // Сохраняем ставки в Firebase
+                await database.ref('giftBets/' + gameId).set({
+                    [color]: currentBets[color].gifts
                 });
             } else {
-                showSimpleAlert('❌ Ошибка при ставке NFT');
+                showSimpleAlert('❌ Ошибка при ставке');
             }
         } catch (error) {
             console.error('Ошибка:', error);
-            showSimpleAlert('❌ Ошибка при ставке NFT');
+            showSimpleAlert('❌ Ошибка при ставке');
         }
     };
+
+        // Возврат Gift владельцу
+    async function returnGiftToOwner(ownerId, giftId, staked = false) {
+        try {
+            const response = await fetch(`${API_URL}/api/nft/${giftId}/return`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: ownerId,
+                    staked: staked
+                })
+            });
+            return response.ok;
+        } catch (error) {
+            console.error('Ошибка возврата Gift:', error);
+            return false;
+        }
+    }
+
+    // Передача Gift новому владельцу
+    async function transferGift(newOwnerId, giftId) {
+        try {
+            const response = await fetch(`${API_URL}/api/nft/${giftId}/transfer`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    newOwnerId: newOwnerId
+                })
+            });
+            return response.ok;
+        } catch (error) {
+            console.error('Ошибка передачи Gift:', error);
+            return false;
+        }
+    }
+
+    // Удаление Gift у владельца
+    async function removeGiftFromOwner(ownerId, giftId) {
+        try {
+            const response = await fetch(`${API_URL}/api/nft/${giftId}/remove`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: ownerId
+                })
+            });
+            return response.ok;
+        } catch (error) {
+            console.error('Ошибка удаления Gift:', error);
+            return false;
+        }
+    }
         // Функция возврата NFT владельцу
     async function returnNFTToOwner(ownerId, nftId, staked = false) {
         try {
@@ -1247,14 +1364,14 @@
     });
 
     // ========== 5. ЛОГИКА СТАВОК ==========
+        // ========== 5. ЛОГИКА СТАВОК (GIFTS) ==========
     let currentBets = {};
-    colors.forEach(c => { 
-        currentBets[c.name] = { 
-            total: 0,           // общая сумма в TON
-            players: {},         // для TON ставок
-            nfts: [],            // для NFT ставок
-            totalNFTs: 0         // количество NFT
-        }; 
+    colors.forEach(c => {
+        currentBets[c.name] = {
+            totalRating: 0,      // общий рейтинг всех Gift-ов на цвете
+            gifts: [],           // сами Gift-ы
+            players: {}          // для обратной совместимости
+        };
     });
 
     let tournamentData = {
@@ -1321,10 +1438,10 @@
             await stakeNFT(color);
             return;
         }
-        
+
         // Иначе обычная TON ставка
         const betAmount = parseFloat(betAmountInput.value);
-        
+
         if (isNaN(betAmount) || betAmount < 0.1) {
             showSimpleAlert('Минимальная ставка: 0.1 TON');
             return;
@@ -1350,20 +1467,24 @@
         }
     };
 
-    function updateBetsUI() {
-        const total = Object.values(currentBets).reduce((sum, b) => sum + b.total, 0);
-        totalBetsEl.textContent = total.toFixed(2);
-        totalPoolEl.textContent = total.toFixed(2);
-        
-        const userTotal = Object.values(currentBets).reduce((sum, b) => sum + (b.players[userId] || 0), 0);
-        yourBetsEl.textContent = userTotal.toFixed(2);
-        
-        // Можно добавить отображение количества NFT
-        const totalNFTs = Object.values(currentBets).reduce((sum, b) => sum + (b.nfts?.length || 0), 0);
-        if (totalNFTs > 0) {
-            console.log(`Всего NFT в игре: ${totalNFTs}`);
+        function updateBetsUI() {
+            const total = Object.values(currentBets).reduce((sum, b) => sum + (b.totalRating || 0), 0);
+            totalBetsEl.textContent = total.toFixed(2);
+            totalPoolEl.textContent = total.toFixed(2);
+
+            // Подсчет Gift-ов игрока
+            let userTotal = 0;
+            Object.values(currentBets).forEach(bet => {
+                if (bet.gifts) {
+                    bet.gifts.forEach(gift => {
+                        if (gift.owner === userId) {
+                            userTotal += gift.rating;
+                        }
+                    });
+                }
+            });
+            yourBetsEl.textContent = userTotal.toFixed(2);
         }
-    }
 
     // ========== 6. ИГРОВАЯ ЛОГИКА ==========
     const playButton = document.getElementById('playButton');
@@ -1401,14 +1522,22 @@
         }
     });
 
+        // Функция определения победителя (на основе рейтинга)
     function getWinningColor() {
-        const total = Object.values(currentBets).reduce((sum, b) => sum + b.total, 0);
-        if (total === 0) return colors[Math.floor(Math.random() * colors.length)].name;
-        const rand = Math.random() * total;
+        const totalRating = Object.values(currentBets).reduce((sum, b) => sum + (b.totalRating || 0), 0);
+
+        if (totalRating === 0) {
+            return colors[Math.floor(Math.random() * colors.length)].name;
+        }
+
+        const rand = Math.random() * totalRating;
         let cumulative = 0;
+
         for (let color of colors) {
-            cumulative += currentBets[color.name].total;
-            if (rand < cumulative) return color.name;
+            cumulative += (currentBets[color.name].totalRating || 0);
+            if (rand < cumulative) {
+                return color.name;
+            }
         }
         return colors[0].name;
     }
@@ -1451,102 +1580,82 @@
     }
 
         async function resolveGame() {
-        const winningColor = getWinningColor();
-        const totalPool = Object.values(currentBets).reduce((sum, b) => sum + b.total, 0);
-        const winners = currentBets[winningColor].players;
-        
-        wheel1Result.textContent = `🏆 ${winningColor}`;
+            const winningColor = getWinningColor();
+            const winners = currentBets[winningColor].gifts || [];
 
-        // Выплачиваем выигрыши по TON ставкам
-        for (let [playerId, betAmount] of Object.entries(winners)) {
-            const winAmount = (betAmount / currentBets[winningColor].total) * totalPool;
-            if (playerId !== 'guest') {
-                await sendWinTransaction(winAmount, playerId);
-                const points = Math.floor(winAmount / 10);
-                tournamentData.players[playerId] = (tournamentData.players[playerId] || 0) + points;
-            }
-        }
+            wheel1Result.textContent = `🏆 ${winningColor}`;
 
-        // Обрабатываем NFT ставки
-        const winningNFTs = currentBets[winningColor].nfts || [];
-        const allNFTs = [];
-        
-        // Собираем все поставленные NFT
-        Object.values(currentBets).forEach(bet => {
-            if (bet.nfts && bet.nfts.length > 0) {
-                allNFTs.push(...bet.nfts);
-            }
-        });
+            // Собираем все поставленные Gift-ы
+            const allGifts = [];
+            Object.values(currentBets).forEach(bet => {
+                if (bet.gifts && bet.gifts.length > 0) {
+                    allGifts.push(...bet.gifts);
+                }
+            });
 
-        // Если есть NFT, распределяем их
-        if (allNFTs.length > 0 && winningNFTs.length > 0) {
-            // Процент выигрыша для владельцев NFT
-            const nftPrizePool = allNFTs.filter(nft => 
-                !winningNFTs.some(win => win.id === nft.id)
+            // Gift-ы с проигравших цветов (призовой пул)
+            const prizeGifts = allGifts.filter(gift =>
+                !winners.some(win => win.id === gift.id)
             );
 
-            // Победители забирают NFT с других цветов
-            for (let nft of winningNFTs) {
-                // Возвращаем свой NFT владельцу
-                await returnNFTToOwner(nft.owner, nft.id, false);
+            // Возвращаем свои Gift-ы победителям
+            for (let gift of winners) {
+                await returnGiftToOwner(gift.owner, gift.id, false);
             }
 
-            // Распределяем проигравшие NFT между победителями
-            for (let nft of nftPrizePool) {
-                // Находим победителя (можно распределять случайно или пропорционально)
-                const randomWinnerIndex = Math.floor(Math.random() * winningNFTs.length);
-                const winnerNFT = winningNFTs[randomWinnerIndex];
-                const winnerId = winnerNFT.owner;
-                
-                // Передаем NFT победителю
-                await transferNFT(winnerId, nft.id);
-                
-                // Удаляем у прошлого владельца
-                await removeNFTFromOwner(nft.owner, nft.id);
+            // Распределяем призовые Gift-ы между победителями
+            if (prizeGifts.length > 0 && winners.length > 0) {
+                // Простое распределение: по очереди
+                for (let i = 0; i < prizeGifts.length; i++) {
+                    const winnerIndex = i % winners.length;
+                    const winner = winners[winnerIndex];
+                    const prizeGift = prizeGifts[i];
+
+                    // Передаем Gift победителю
+                    await transferGift(winner.owner, prizeGift.id);
+                    await removeGiftFromOwner(prizeGift.owner, prizeGift.id);
+
+                    showSimpleAlert(`🎁 ${prizeGift.name} переходит к игроку!`);
+                }
             }
+
+            // Сохраняем результаты
+            const gameResult = {
+                date: Date.now(),
+                winningColor,
+                totalRating: Object.values(currentBets).reduce((sum, b) => sum + (b.totalRating || 0), 0),
+                gifts: Object.fromEntries(
+                    Object.entries(currentBets).map(([color, bet]) => [
+                        color,
+                        { gifts: bet.gifts?.map(g => g.name) || [] }
+                    ])
+                )
+            };
+
+            await database.ref('games/' + gameId).push(gameResult);
+
+            // Сбрасываем ставки
+            colors.forEach(c => {
+                currentBets[c.name] = {
+                    totalRating: 0,
+                    gifts: [],
+                    players: {}
+                };
+            });
+
+            await database.ref('giftBets/' + gameId).set({});
+
+            updateBetsUI();
+
+            // Сбрасываем готовность
+            playersRef.once('value', (snapshot) => {
+                const players = snapshot.val() || {};
+                Object.keys(players).forEach(id => playersRef.child(id).update({ ready: false }));
+            });
+
+            // Обновляем инвентарь
+            loadUserNFTs();
         }
-
-        // Сохраняем результаты
-        const gameResult = { 
-            date: Date.now(), 
-            winningColor, 
-            totalPool, 
-            bets: currentBets,
-            nftBets: Object.fromEntries(
-                Object.entries(currentBets).map(([color, bet]) => [
-                    color, 
-                    { nfts: bet.nfts?.map(n => n.name) || [] }
-                ])
-            )
-        };
-        
-        await database.ref('games/' + gameId).push(gameResult);
-        await database.ref('tournament').set(tournamentData);
-
-        // Сбрасываем ставки
-        colors.forEach(c => { 
-            currentBets[c.name] = { 
-                total: 0, 
-                players: {}, 
-                nfts: [],
-                totalNFTs: 0 
-            }; 
-        });
-        
-        await database.ref('bets/' + gameId).set(currentBets);
-        await database.ref('nftBets/' + gameId).set({});
-        
-        updateBetsUI();
-
-        // Сбрасываем готовность
-        playersRef.once('value', (snapshot) => {
-            const players = snapshot.val() || {};
-            Object.keys(players).forEach(id => playersRef.child(id).update({ ready: false }));
-        });
-
-        // Обновляем инвентарь NFT
-        loadUserNFTs();
-    }
 
     // ========== 7. ТУРНИРНАЯ ЛОГИКА ==========
     function loadLeaderboard() {
@@ -1631,5 +1740,6 @@
 </script>
 </body>
 </html>
+
 
 
