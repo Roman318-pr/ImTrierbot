@@ -707,6 +707,17 @@
                         </div>
                     </div>
                 </div>
+                <!-- Временно, после инвентаря -->
+                <button onclick="addTestGift()" style="
+                    background: #2a2a2a;
+                    border: 1px solid #2ecc71;
+                    padding: 10px;
+                    margin: 10px 20px;
+                    border-radius: 30px;
+                    color: white;
+                    font-weight: bold;
+                    cursor: pointer;
+                ">➕ Добавить тестовый Gift</button>
 
                 <div class="play-area">
                     <button class="play-button" id="playButton">▶ ИГРАТЬ</button>
@@ -804,14 +815,90 @@
                 </div>
             </div>
         </div>
+                <!-- Вкладка магазина -->
+        <div class="tab-content" id="shopTab">
+            <div class="wallet-tab">
+                <div class="wallet-header">
+                    <span class="wallet-title">🛒 Магазин Gift-ов</span>
+                    <span class="wallet-address" style="background: #1a3a1a; color: #2ecc71;">⭐ Stars</span>
+                </div>
+
+                <div style="margin-bottom: 20px; text-align: center; color: #aaa;">
+                    Покупайте Gift-ы за Telegram Stars<br>
+                    <span style="font-size: 12px;">1 Star = 1 ⭐ рейтинга</span>
+                </div>
+
+                <!-- Сетка Gift-ов -->
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px;">
+
+                    <!-- Plush Pepe -->
+                    <div class="nft-card" style="cursor: pointer;" onclick="buyGiftWithTON('Plush Pepe', 4.2)">
+                        <div class="nft-image">🐸</div>
+                        <div class="nft-name">Plush Pepe</div>
+                        <div class="nft-collection">Classic</div>
+                        <div class="nft-price">4.2 TON</div>
+                        <div style="color: #2ecc71; font-size: 12px; margin-top: 5px;">⭐ 4200 рейтинга</div>
+                    </div>
+
+                    <!-- Durov Cap -->
+                    <div class="nft-card" style="cursor: pointer;" onclick="buyGiftWithTON('Durov Cap', 0.885)">
+                        <div class="nft-image">🧢</div>
+                        <div class="nft-name">Durov Cap</div>
+                        <div class="nft-collection">Classic</div>
+                        <div class="nft-price">0.885 TON</div>
+                        <div style="color: #2ecc71; font-size: 12px; margin-top: 5px;">⭐ 885 рейтинга</div>
+                    </div>
+
+                    <!-- Heart Locket -->
+                    <div class="nft-card" style="cursor: pointer;" onclick="buyGiftWithTON('Heart Locket', 0.896)">
+                        <div class="nft-image">💖</div>
+                        <div class="nft-name">Heart Locket</div>
+                        <div class="nft-collection">Silver</div>
+                        <div class="nft-price">0.896 TON</div>
+                        <div style="color: #2ecc71; font-size: 12px; margin-top: 5px;">⭐ 896 рейтинга</div>
+                    </div>
+
+                    <!-- Toy Bear -->
+                    <div class="nft-card" style="cursor: pointer;" onclick="buyGiftWithTON('Toy Bear', 0.013)">
+                        <div class="nft-image">🧸</div>
+                        <div class="nft-name">Toy Bear</div>
+                        <div class="nft-collection">Classic</div>
+                        <div class="nft-price">0.013 TON</div>
+                        <div style="color: #2ecc71; font-size: 12px; margin-top: 5px;">⭐ 13 рейтинга</div>
+                    </div>
+
+                    <!-- Swiss Watch -->
+                    <div class="nft-card" style="cursor: pointer;" onclick="buyGiftWithTON('Swiss Watch', 0.067)">
+                        <div class="nft-image">⌚</div>
+                        <div class="nft-name">Swiss Watch</div>
+                        <div class="nft-collection">Classic</div>
+                        <div class="nft-price">0.067 TON</div>
+                        <div style="color: #2ecc71; font-size: 12px; margin-top: 5px;">⭐ 67 рейтинга</div>
+                    </div>
+
+                    <!-- Случайный Gift -->
+                    <div class="nft-card" style="cursor: pointer; border-color: #2ecc71;" onclick="buyGiftWithTON('Random', 0.1)">
+                        <div class="nft-image">🎁</div>
+                        <div class="nft-name">Случайный Gift</div>
+                        <div class="nft-collection">Lucky Box</div>
+                        <div class="nft-price">0.1 TON</div>
+                        <div style="color: #2ecc71; font-size: 12px; margin-top: 5px;">⭐ ??? рейтинга</div>
+                    </div>
+                </div>
+
+                <div style="color: #aaa; font-size: 12px; text-align: center;">
+                    💎 После покупки Gift автоматически появится в инвентаре
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="bottom-nav">
         <div class="nav-buttons" id="navContainer">
             <button class="nav-btn" data-nav="game">🎰 Игра</button>
+            <button class="nav-btn" data-nav="shop">🛒 Магазин</button>
             <button class="nav-btn" data-nav="wallet">💎 Кошелек</button>
             <button class="nav-btn" data-nav="tournament">🏆 Турнир</button>
-            <button class="nav-btn" data-nav="profile">⚙️ Профиль</button>
         </div>
     </div>
 </div>
@@ -1026,6 +1113,115 @@
             console.error('Ошибка загрузки NFT:', error);
         }
     }
+        // ========== 2.7 МАГАЗИН GIFT-ОВ ==========
+
+    // Получить эмодзи для Gift-а
+    function getGiftImage(giftName) {
+        const images = {
+            'Plush Pepe': '🐸',
+            'Durov Cap': '🧢',
+            'Heart Locket': '💖',
+            'Toy Bear': '🧸',
+            'Swiss Watch': '⌚'
+        };
+        return images[giftName] || '🎁';
+    }
+
+    // Покупка Gift-а за TON
+    window.buyGiftWithTON = async function(giftName, priceTON) {
+        if (!walletConnected) {
+            showSimpleAlert('Сначала подключите кошелек');
+            connectWallet();
+            return;
+        }
+
+        if (priceTON > tonBalance) {
+            showSimpleAlert('❌ Недостаточно TON на балансе');
+            return;
+        }
+
+        try {
+            // Создаем транзакцию
+            const transaction = {
+                validUntil: Math.floor(Date.now() / 1000) + 600,
+                messages: [{
+                    address: RECIPIENT_ADDRESS, // Ваш кошелек для получения оплаты
+                    amount: (priceTON * 1e9).toString(),
+                    payload: `Покупка ${giftName}`
+                }]
+            };
+
+            showSimpleAlert(`💰 Отправка ${priceTON} TON...`);
+
+            const result = await tonConnectUI.sendTransaction(transaction);
+
+            if (result) {
+                // Создаем Gift
+                const rating = getGiftRating(giftName, 'Classic');
+                const newGift = {
+                    id: `gift_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+                    name: giftName,
+                    collection: giftName,
+                    model: 'Classic',
+                    image: getGiftImage(giftName),
+                    priceTON: priceTON,
+                    rating: rating,
+                    staked: false,
+                    purchasedAt: Date.now()
+                };
+
+                // Добавляем в локальный массив
+                userNFTs.push(newGift);
+
+                // Отправляем на сервер
+                try {
+                    await fetch(`${API_URL}/api/user/${userId}/nfts/add`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newGift)
+                    });
+                } catch (serverError) {
+                    console.error('Ошибка отправки на сервер:', serverError);
+                }
+
+                renderNFTGrid();
+                showSimpleAlert(`✅ ${giftName} куплен за ${priceTON} TON!`);
+
+                // Обновляем баланс
+                await fetchTONBalance(walletAddress);
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            if (error.message?.includes('rejected')) {
+                showSimpleAlert('❌ Транзакция отклонена');
+            } else {
+                showSimpleAlert('❌ Ошибка при покупке');
+            }
+        }
+    };
+
+    // Покупка случайного Gift-а
+    window.buyRandomGiftWithTON = async function() {
+        const gifts = ['Plush Pepe', 'Durov Cap', 'Heart Locket', 'Toy Bear', 'Swiss Watch'];
+        const randomGift = gifts[Math.floor(Math.random() * gifts.length)];
+        await buyGiftWithTON(randomGift, 0.1);
+    };
+        // ТЕСТОВАЯ ФУНКЦИЯ: добавить тестовый Gift
+    window.addTestGift = async function() {
+        const testGift = {
+            id: 'test_' + Date.now(),
+            name: 'Plush Pepe',
+            collection: 'Plush Pepe',
+            model: 'Classic',
+            image: '🐸',
+            priceTON: 4200,
+            staked: false
+        };
+
+        userNFTs.push(testGift);
+        renderNFTGrid();
+        showSimpleAlert('✅ Добавлен тестовый Plush Pepe');
+    };
 
         // ========== 2.6 РЕЙТИНГ GIFT-ОВ ==========
     // Стоимость Gift-ов в TON (актуальные цены с рынка)
@@ -1330,17 +1526,21 @@
 
     // ========== 4. ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ==========
     const gameTab = document.getElementById('gameTab');
+    const shopTab = document.getElementById('shopTab');
     const walletTab = document.getElementById('walletTab');
     const tournamentTab = document.getElementById('tournamentTab');
     const navButtons = document.querySelectorAll('.nav-btn');
 
     window.switchTab = function(tabId) {
         gameTab.classList.remove('active');
+        shopTab.classList.remove('active');
         walletTab.classList.remove('active');
         tournamentTab.classList.remove('active');
 
         if (tabId === 'game') {
             gameTab.classList.add('active');
+        } else if (tabId === 'shop') {
+            shopTab.classList.add('active');
         } else if (tabId === 'wallet') {
             walletTab.classList.add('active');
             loadWalletStats();
