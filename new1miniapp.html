@@ -12,48 +12,69 @@
         }
 
         body {
-            background: #0f0f1a;
+            background: linear-gradient(145deg, #0f0f1a 0%, #1a1a2f 100%);
             color: white;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            padding: 16px;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
+            padding: 16px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Анимированный фон */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(0, 136, 204, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(46, 204, 113, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
         }
 
         .container {
             max-width: 400px;
             width: 100%;
             margin: 0 auto;
+            position: relative;
         }
 
-        /* Шапка */
+        /* Шапка с эффектом стекла */
         .header {
-            background: #1a1a2f;
+            background: rgba(26, 26, 47, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             padding: 15px 20px;
             border-radius: 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            border: 1px solid #2a2a3f;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
         }
 
         .balance {
             color: #0088cc;
             font-size: 20px;
             font-weight: bold;
+            text-shadow: 0 0 10px rgba(0, 136, 204, 0.3);
         }
 
         .balance small {
-            color: #666;
+            color: #888;
             font-size: 12px;
             display: block;
         }
 
         .connect-btn {
-            background: #0088cc;
+            background: linear-gradient(135deg, #0088cc, #0066aa);
             border: none;
             padding: 10px 20px;
             border-radius: 30px;
@@ -61,33 +82,80 @@
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 136, 204, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .connect-btn.connected {
-            background: #1a1a2f;
+            background: rgba(26, 26, 47, 0.8);
             border: 2px solid #0088cc;
             color: #0088cc;
+            box-shadow: 0 0 20px rgba(0, 136, 204, 0.3);
+        }
+
+        .connect-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 136, 204, 0.4);
         }
 
         .connect-btn:active {
-            transform: scale(0.95);
+            transform: translateY(0);
         }
 
         /* Информация о кошельке */
         .wallet-info {
-            background: #1a1a2f;
+            background: rgba(26, 26, 47, 0.8);
+            backdrop-filter: blur(10px);
             padding: 15px;
             border-radius: 20px;
             margin-bottom: 20px;
             font-size: 14px;
-            border: 1px solid #2a2a3f;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             word-break: break-all;
         }
 
         .wallet-address {
             color: #0088cc;
             font-family: monospace;
+            font-size: 12px;
+        }
+
+        /* Статистика */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(26, 26, 47, 0.6);
+            backdrop-filter: blur(5px);
+            padding: 12px 5px;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            background: rgba(26, 26, 47, 0.8);
+            border-color: rgba(0, 136, 204, 0.3);
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0088cc;
+            text-shadow: 0 0 10px rgba(0, 136, 204, 0.3);
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #888;
+            margin-top: 4px;
         }
 
         /* Сетка кейсов */
@@ -99,20 +167,16 @@
         }
 
         .case-card {
-            background: #1a1a2f;
+            background: rgba(26, 26, 47, 0.8);
+            backdrop-filter: blur(5px);
             border-radius: 25px;
             padding: 20px 15px;
             text-align: center;
-            border: 2px solid #2a2a3f;
+            border: 2px solid rgba(255, 255, 255, 0.05);
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s;
             position: relative;
             overflow: hidden;
-        }
-
-        .case-card.free {
-            border-color: #2ecc71;
-            box-shadow: 0 0 15px rgba(46, 204, 113, 0.3);
         }
 
         .case-card::before {
@@ -127,6 +191,10 @@
             opacity: 0;
             transition: opacity 0.3s;
             z-index: -1;
+        }
+
+        .case-card:hover {
+            transform: translateY(-5px);
         }
 
         .case-card:hover::before {
@@ -144,6 +212,7 @@
         .case-emoji {
             font-size: 48px;
             margin-bottom: 8px;
+            filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
         }
 
         .case-name {
@@ -173,22 +242,24 @@
         }
 
         .case-items-preview span {
-            background: #0f0f1a;
+            background: rgba(15, 15, 26, 0.6);
             padding: 3px 8px;
             border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .free-badge {
             position: absolute;
             top: 10px;
             right: 10px;
-            background: #2ecc71;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
             color: white;
             padding: 4px 8px;
             border-radius: 20px;
             font-size: 10px;
             font-weight: 700;
             text-transform: uppercase;
+            box-shadow: 0 2px 10px rgba(46, 204, 113, 0.3);
         }
 
         /* Кнопки */
@@ -200,7 +271,7 @@
 
         .action-btn {
             flex: 1;
-            background: #2ecc71;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
             border: none;
             padding: 16px;
             border-radius: 40px;
@@ -208,31 +279,40 @@
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s;
             box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .action-btn.secondary {
-            background: #3498db;
-            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(46, 204, 113, 0.4);
         }
 
         .action-btn:active {
-            transform: scale(0.96);
+            transform: translateY(0);
+        }
+
+        .action-btn.secondary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
         }
 
         .action-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
 
         /* Комнаты */
         .rooms-section {
-            background: #1a1a2f;
+            background: rgba(26, 26, 47, 0.8);
+            backdrop-filter: blur(10px);
             border-radius: 30px;
             padding: 20px;
-            border: 1px solid #2a2a3f;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
         }
 
         .rooms-header {
@@ -245,27 +325,46 @@
         .rooms-title {
             color: #888;
             font-size: 16px;
+            font-weight: 600;
         }
 
         .refresh-btn {
-            background: #2a2a3f;
+            background: rgba(42, 42, 63, 0.8);
             border: none;
             color: white;
             padding: 8px 15px;
             border-radius: 30px;
             font-size: 13px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .refresh-btn:active {
-            background: #3a3a4f;
+        .refresh-btn:hover {
+            background: rgba(58, 58, 79, 0.8);
+            transform: rotate(180deg);
         }
 
         .rooms-list {
             min-height: 200px;
             max-height: 300px;
             overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #0088cc #1a1a2f;
+        }
+
+        .rooms-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .rooms-list::-webkit-scrollbar-track {
+            background: #1a1a2f;
+            border-radius: 10px;
+        }
+
+        .rooms-list::-webkit-scrollbar-thumb {
+            background: #0088cc;
+            border-radius: 10px;
         }
 
         .room-item {
@@ -273,14 +372,15 @@
             justify-content: space-between;
             align-items: center;
             padding: 15px;
-            border-bottom: 1px solid #2a2a3f;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s;
+            border-radius: 20px;
         }
 
         .room-item:hover {
-            background: #2a2a3f;
-            border-radius: 20px;
+            background: rgba(42, 42, 63, 0.8);
+            transform: translateX(5px);
         }
 
         .room-item:last-child {
@@ -298,15 +398,17 @@
         }
 
         .room-join-btn {
-            background: #0088cc;
+            background: linear-gradient(135deg, #0088cc, #0066aa);
             padding: 8px 20px;
             border-radius: 30px;
             font-size: 13px;
             font-weight: 600;
+            box-shadow: 0 2px 10px rgba(0, 136, 204, 0.3);
         }
 
         .room-join-btn.free {
-            background: #2ecc71;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            box-shadow: 0 2px 10px rgba(46, 204, 113, 0.3);
         }
 
         .loading-spinner {
@@ -322,17 +424,31 @@
             font-style: italic;
         }
 
-        /* Батл комната (скрыта по умолчанию) */
+        /* Батл комната */
         .battle-room {
-            background: #1a1a2f;
+            background: rgba(26, 26, 47, 0.95);
+            backdrop-filter: blur(10px);
             border-radius: 30px;
             padding: 25px;
-            border: 2px solid #2a2a3f;
+            border: 2px solid rgba(255, 255, 255, 0.1);
             display: none;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
 
         .battle-room.active {
             display: block;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .main-view {
@@ -347,7 +463,9 @@
             text-align: center;
             color: #888;
             margin-bottom: 20px;
-            font-size: 20px;
+            font-size: 24px;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
 
         .battle-type {
@@ -356,13 +474,14 @@
         }
 
         .test-badge {
-            background: #2ecc71;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
             color: white;
             padding: 5px 15px;
             border-radius: 30px;
             font-size: 14px;
             font-weight: 600;
             display: inline-block;
+            box-shadow: 0 2px 10px rgba(46, 204, 113, 0.3);
         }
 
         .players-grid {
@@ -373,16 +492,35 @@
         }
 
         .player-card {
-            background: #0f0f1a;
+            background: rgba(15, 15, 26, 0.8);
             padding: 20px;
             border-radius: 20px;
             text-align: center;
-            border: 2px solid #2a2a3f;
+            border: 2px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .player-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .player-card:hover::before {
+            opacity: 1;
         }
 
         .player-card.you {
             border-color: #0088cc;
-            box-shadow: 0 0 20px rgba(0, 136, 204, 0.3);
+            box-shadow: 0 0 30px rgba(0, 136, 204, 0.3);
         }
 
         .player-name {
@@ -392,41 +530,58 @@
         }
 
         .player-gift {
-            font-size: 50px;
-            margin: 10px 0;
+            font-size: 60px;
+            margin: 15px 0;
+            filter: drop-shadow(0 4px 15px rgba(0, 0, 0, 0.5));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
         }
 
         .player-value {
             color: #2ecc71;
-            font-size: 20px;
+            font-size: 24px;
             font-weight: 700;
+            text-shadow: 0 0 15px rgba(46, 204, 113, 0.5);
         }
 
         .vs-divider {
             text-align: center;
-            font-size: 30px;
-            color: #888;
-            margin: 15px 0;
+            font-size: 36px;
+            font-weight: 800;
+            color: rgba(255, 255, 255, 0.2);
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .vs-divider::before,
+        .vs-divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 30%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        }
+
+        .vs-divider::before {
+            left: 0;
+        }
+
+        .vs-divider::after {
+            right: 0;
         }
 
         .battle-status {
             text-align: center;
             color: #2ecc71;
-            margin: 15px 0;
+            margin: 20px 0;
             font-weight: 600;
-        }
-
-        .winner-section {
-            background: linear-gradient(45deg, #f1c40f, #e67e22);
-            border-radius: 30px;
-            padding: 20px;
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .winner-section h2 {
-            color: white;
-            margin: 0;
+            font-size: 18px;
+            min-height: 60px;
         }
 
         @keyframes spin {
@@ -434,25 +589,20 @@
             100% { transform: rotate(360deg); }
         }
 
-        .opening-animation {
-            text-align: center;
-            padding: 30px;
-        }
-
         .spinner {
             display: inline-block;
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top: 4px solid #0088cc;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid #0088cc;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-bottom: 15px;
+            margin-right: 10px;
         }
 
         .back-btn {
             width: 100%;
-            background: #e74c3c;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
             border: none;
             padding: 15px;
             border-radius: 40px;
@@ -460,7 +610,102 @@
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
-            margin-top: 15px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
+        }
+
+        .back-btn:active {
+            transform: translateY(0);
+        }
+
+        /* История игр */
+        .history-section {
+            background: rgba(26, 26, 47, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .history-title {
+            color: #888;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .history-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 12px;
+        }
+
+        .history-item.win {
+            border-left: 3px solid #2ecc71;
+        }
+
+        .history-item.loss {
+            border-left: 3px solid #e74c3c;
+        }
+
+        .history-item.draw {
+            border-left: 3px solid #f1c40f;
+        }
+
+        .history-result {
+            font-weight: 600;
+        }
+
+        .history-result.win {
+            color: #2ecc71;
+        }
+
+        .history-result.loss {
+            color: #e74c3c;
+        }
+
+        .history-result.draw {
+            color: #f1c40f;
+        }
+
+        .history-date {
+            color: #888;
+            font-size: 10px;
+        }
+
+        /* Конфетти */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #ff6b6b;
+            position: absolute;
+            top: -10px;
+            border-radius: 50%;
+            animation: confettiFall 3s linear forwards;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        @keyframes confettiFall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
         }
     </style>
     <!-- TON Connect -->
@@ -488,6 +733,26 @@
                 <div style="margin-top: 5px; color: #888; font-size: 12px;">ID: <span id="userId"></span></div>
             </div>
 
+            <!-- Статистика -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="statGames">0</div>
+                    <div class="stat-label">Игр</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statWins">0</div>
+                    <div class="stat-label">Побед</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statLosses">0</div>
+                    <div class="stat-label">Поражений</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statDraws">0</div>
+                    <div class="stat-label">Ничьих</div>
+                </div>
+            </div>
+
             <!-- Сетка кейсов -->
             <div class="cases-grid" id="casesGrid"></div>
 
@@ -501,22 +766,30 @@
             <div class="rooms-section">
                 <div class="rooms-header">
                     <span class="rooms-title">📋 АКТИВНЫЕ КОМНАТЫ</span>
-                    <button class="refresh-btn" id="refreshRoomsBtn">🔄 Обновить</button>
+                    <button class="refresh-btn" id="refreshRoomsBtn">🔄</button>
                 </div>
                 <div class="rooms-list" id="roomsList">
                     <div class="loading-spinner">⏳ Загрузка...</div>
                 </div>
             </div>
+
+            <!-- История игр -->
+            <div class="history-section">
+                <div class="history-title">📜 ИСТОРИЯ ИГР</div>
+                <div class="history-list" id="historyList">
+                    <div class="loading-spinner">⏳ Загрузка...</div>
+                </div>
+            </div>
         </div>
 
-        <!-- Батл комната (изначально скрыта) -->
+        <!-- Батл комната -->
         <div id="battleRoom" class="battle-room">
             <div class="battle-title" id="battleTitle">⚔️ БАТЛ</div>
-
+            
             <div class="battle-type" id="battleType"></div>
-
+            
             <div class="battle-status" id="battleStatus">⏳ Загрузка...</div>
-
+            
             <div class="players-grid">
                 <div class="player-card you" id="player1Card">
                     <div class="player-name" id="player1Name">ВЫ</div>
@@ -529,9 +802,9 @@
                     <div class="player-value" id="player2Value">-</div>
                 </div>
             </div>
-
+            
             <div class="vs-divider">⚡ VS ⚡</div>
-
+            
             <button class="back-btn" id="backBtn">← НАЗАД</button>
         </div>
     </div>
@@ -632,6 +905,14 @@
         const userName = 'Player_' + Math.random().toString(36).substr(2, 6);
         let roomsListener = null;
         let currentRoomId = null;
+        
+        // Статистика
+        let userStats = {
+            games: 0,
+            wins: 0,
+            losses: 0,
+            draws: 0
+        };
 
         // ========== ЭЛЕМЕНТЫ ==========
         const mainView = document.getElementById('mainView');
@@ -641,6 +922,7 @@
         const createBtn = document.getElementById('createBtn');
         const quickBtn = document.getElementById('quickBtn');
         const roomsList = document.getElementById('roomsList');
+        const historyList = document.getElementById('historyList');
         const walletInfo = document.getElementById('walletInfo');
         const walletAddressEl = document.getElementById('walletAddress');
         const userIdEl = document.getElementById('userId');
@@ -648,7 +930,13 @@
         const casesGrid = document.getElementById('casesGrid');
         const refreshRoomsBtn = document.getElementById('refreshRoomsBtn');
         const backBtn = document.getElementById('backBtn');
-
+        
+        // Элементы статистики
+        const statGames = document.getElementById('statGames');
+        const statWins = document.getElementById('statWins');
+        const statLosses = document.getElementById('statLosses');
+        const statDraws = document.getElementById('statDraws');
+        
         // Элементы батл комнаты
         const battleTitle = document.getElementById('battleTitle');
         const battleType = document.getElementById('battleType');
@@ -666,6 +954,24 @@
                 window.Telegram.WebApp.showPopup({ message: msg });
             } else {
                 alert(msg);
+            }
+        }
+
+        function createConfetti() {
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7'];
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.width = Math.random() * 10 + 5 + 'px';
+                    confetti.style.height = confetti.style.width;
+                    confetti.style.animationDuration = Math.random() * 2 + 2 + 's';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 50);
             }
         }
 
@@ -691,19 +997,100 @@
             }
         }
 
+        function updateStats() {
+            statGames.textContent = userStats.games;
+            statWins.textContent = userStats.wins;
+            statLosses.textContent = userStats.losses;
+            statDraws.textContent = userStats.draws;
+        }
+
+        // Загрузка истории из Firebase
+        async function loadHistory() {
+            try {
+                const snapshot = await database.ref('users/' + userId + '/history')
+                    .orderByChild('timestamp')
+                    .limitToLast(20)
+                    .once('value');
+                
+                const history = snapshot.val();
+                historyList.innerHTML = '';
+                
+                if (!history) {
+                    historyList.innerHTML = '<div class="no-rooms">😢 Нет истории игр</div>';
+                    return;
+                }
+
+                const historyArray = Object.values(history).reverse();
+                historyArray.forEach(game => {
+                    const item = document.createElement('div');
+                    item.className = `history-item ${game.result}`;
+                    
+                    const date = new Date(game.timestamp).toLocaleString('ru-RU', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        day: '2-digit',
+                        month: '2-digit'
+                    });
+                    
+                    let resultText = '';
+                    if (game.result === 'win') resultText = 'Победа';
+                    else if (game.result === 'loss') resultText = 'Поражение';
+                    else resultText = 'Ничья';
+                    
+                    item.innerHTML = `
+                        <div>
+                            <div>${game.caseEmoji} ${game.caseName}</div>
+                            <div class="history-date">${date}</div>
+                        </div>
+                        <div class="history-result ${game.result}">${resultText}</div>
+                    `;
+                    
+                    historyList.appendChild(item);
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки истории:', error);
+            }
+        }
+
+        // Сохранение игры в историю
+        async function saveGameToHistory(room, result) {
+            const gameData = {
+                caseName: CASES[room.caseType].name,
+                caseEmoji: CASES[room.caseType].emoji,
+                betAmount: room.betAmount,
+                result: result,
+                timestamp: Date.now()
+            };
+            
+            try {
+                await database.ref('users/' + userId + '/history').push(gameData);
+                
+                // Обновляем статистику
+                userStats.games++;
+                if (result === 'win') userStats.wins++;
+                else if (result === 'loss') userStats.losses++;
+                else if (result === 'draw') userStats.draws++;
+                
+                updateStats();
+                loadHistory();
+            } catch (error) {
+                console.error('Ошибка сохранения истории:', error);
+            }
+        }
+
         // ========== ОТОБРАЖЕНИЕ КЕЙСОВ ==========
         function renderCases() {
             casesGrid.innerHTML = '';
-
+            
             Object.values(CASES).forEach(caseData => {
                 const caseEl = document.createElement('div');
                 caseEl.className = `case-card ${caseData.isFree ? 'free' : ''} ${selectedCase === caseData.id ? 'selected' : ''}`;
                 caseEl.setAttribute('data-case', caseData.id);
-
-                const previewItems = caseData.items.slice(0, 3).map(item =>
+                
+                const previewItems = caseData.items.slice(0, 3).map(item => 
                     `<span>${item.emoji} ${item.value}</span>`
                 ).join('');
-
+                
                 caseEl.innerHTML = `
                     ${caseData.isFree ? '<div class="free-badge">FREE</div>' : ''}
                     <div class="case-emoji">${caseData.emoji}</div>
@@ -715,13 +1102,13 @@
                         ${previewItems}
                     </div>
                 `;
-
+                
                 caseEl.onclick = () => {
                     selectedCase = caseData.id;
                     document.querySelectorAll('.case-card').forEach(c => c.classList.remove('selected'));
                     caseEl.classList.add('selected');
                 };
-
+                
                 casesGrid.appendChild(caseEl);
             });
         }
@@ -766,7 +1153,7 @@
 
         async function sendTransaction(amount) {
             if (amount === 0) return true;
-
+            
             if (!tonConnectUI || !walletConnected) {
                 showMessage('❌ Кошелек не подключен');
                 return false;
@@ -801,7 +1188,7 @@
         async function createRoom() {
             const caseData = CASES[selectedCase];
             const roomId = 'room_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
-
+            
             const roomData = {
                 id: roomId,
                 creator: userId,
@@ -816,17 +1203,14 @@
                     address: walletAddress || ''
                 }],
                 createdAt: Date.now(),
-                expiresAt: Date.now() + 5 * 60 * 1000 // 5 минут
+                expiresAt: Date.now() + 5 * 60 * 1000
             };
 
             try {
                 await database.ref('rooms/' + roomId).set(roomData);
                 showMessage('✅ Комната создана! Ожидаем игрока...');
-
-                // Подписываемся на изменения комнаты
+                
                 subscribeToRoom(roomId);
-
-                // Показываем интерфейс комнаты
                 showBattleRoom(roomId, 'waiting', caseData);
             } catch (error) {
                 console.error('Ошибка создания комнаты:', error);
@@ -837,19 +1221,18 @@
         // Поиск доступной комнаты
         async function findAvailableRoom() {
             const caseData = CASES[selectedCase];
-
+            
             try {
                 const snapshot = await database.ref('rooms')
                     .orderByChild('status')
                     .equalTo('waiting')
                     .once('value');
-
+                
                 const rooms = snapshot.val();
                 if (!rooms) return null;
-
-                // Ищем комнату с таким же типом кейса
+                
                 for (let [id, room] of Object.entries(rooms)) {
-                    if (room.caseType === selectedCase &&
+                    if (room.caseType === selectedCase && 
                         room.players.length === 1 &&
                         room.creator !== userId) {
                         return { id, ...room };
@@ -865,15 +1248,13 @@
         // Подключение к комнате
         async function joinRoom(roomId, roomData) {
             const caseData = CASES[roomData.caseType];
-
-            // Отправляем транзакцию если кейс платный
+            
             if (!roomData.isFree) {
                 const success = await sendTransaction(caseData.price);
                 if (!success) return;
             }
 
             try {
-                // Добавляем игрока в комнату
                 const updatedPlayers = [
                     ...roomData.players,
                     {
@@ -890,11 +1271,8 @@
                 });
 
                 showMessage('✅ Вы подключились к комнате!');
-
-                // Подписываемся на изменения комнаты
+                
                 subscribeToRoom(roomId);
-
-                // Показываем интерфейс комнаты
                 showBattleRoom(roomId, 'full', caseData);
             } catch (error) {
                 console.error('Ошибка подключения к комнате:', error);
@@ -917,7 +1295,6 @@
                     return;
                 }
 
-                // Обновляем интерфейс в зависимости от статуса
                 updateRoomUI(room);
             });
         }
@@ -926,7 +1303,6 @@
         function updateRoomUI(room) {
             if (!room) return;
 
-            // Обновляем имена игроков если они есть
             if (room.players && room.players.length > 0) {
                 if (room.players[0] && room.players[0].id === userId) {
                     player2Name.textContent = room.players[1]?.name || 'СОПЕРНИК';
@@ -943,35 +1319,43 @@
             } else if (room.status === 'playing') {
                 battleStatus.innerHTML = '⚔️ Битва началась...';
             } else if (room.status === 'finished') {
-                // Если уже завершено, показываем результаты из Firebase
                 if (room.results) {
                     if (room.results[room.players[0]?.id]) {
                         player1Gift.textContent = room.results[room.players[0].id].emoji;
                         player1Value.textContent = '⭐ ' + room.results[room.players[0].id].value;
                     }
-
+                    
                     if (room.results[room.players[1]?.id]) {
                         player2Gift.textContent = room.results[room.players[1].id].emoji;
                         player2Value.textContent = '⭐ ' + room.results[room.players[1].id].value;
                     }
                 }
-
+                
                 let resultText = '';
+                let gameResult = '';
+                
                 if (room.winner === userId) {
                     resultText = '🏆 ВЫ ПОБЕДИЛИ!';
+                    gameResult = 'win';
                     if (!room.isFree) {
                         resultText += ' +' + (room.betAmount * 2) + ' TON';
                     }
+                    createConfetti();
                 } else if (room.winner === 'draw') {
                     resultText = '🤝 НИЧЬЯ!';
+                    gameResult = 'draw';
                     if (!room.isFree) {
                         resultText += ' Возврат ' + room.betAmount + ' TON';
                     }
                 } else if (room.winner && room.winner !== userId) {
                     resultText = '😢 ВЫ ПРОИГРАЛИ';
+                    gameResult = 'loss';
                 }
-
+                
                 battleStatus.innerHTML = resultText;
+                
+                // Сохраняем в историю
+                saveGameToHistory(room, gameResult);
             }
         }
 
@@ -979,11 +1363,9 @@
         async function startBattle(room) {
             battleStatus.innerHTML = '<div class="spinner"></div>Генерируем результаты...';
 
-            // Генерируем результаты на сервере (в Firebase)
             const player1Item = getRandomItem(room.caseType);
             const player2Item = getRandomItem(room.caseType);
 
-            // Определяем победителя
             let winner = '';
             if (player1Item.value > player2Item.value) {
                 winner = room.players[0].id;
@@ -993,7 +1375,6 @@
                 winner = 'draw';
             }
 
-            // Сохраняем результаты в Firebase
             await database.ref('rooms/' + room.id).update({
                 status: 'finished',
                 results: {
@@ -1012,27 +1393,23 @@
                 finishedAt: Date.now()
             });
 
-            // Обновляем UI из Firebase (через подписку)
             battleStatus.innerHTML = '🎲 Открываем кейсы...';
-
+            
             setTimeout(async () => {
-                // Получаем актуальные результаты из Firebase
                 const snapshot = await database.ref('rooms/' + room.id).once('value');
                 const updatedRoom = snapshot.val();
-
+                
                 if (updatedRoom && updatedRoom.results) {
-                    // Показываем результаты для каждого игрока
                     if (updatedRoom.results[room.players[0].id]) {
                         player1Gift.textContent = updatedRoom.results[room.players[0].id].emoji;
                         player1Value.textContent = '⭐ ' + updatedRoom.results[room.players[0].id].value;
                     }
-
+                    
                     if (updatedRoom.results[room.players[1].id]) {
                         player2Gift.textContent = updatedRoom.results[room.players[1].id].emoji;
                         player2Value.textContent = '⭐ ' + updatedRoom.results[room.players[1].id].value;
                     }
 
-                    // Показываем результат
                     let resultText = '';
                     if (updatedRoom.winner === userId) {
                         resultText = '🏆 ВЫ ПОБЕДИЛИ!';
@@ -1058,7 +1435,7 @@
             const caseData = CASES[caseId];
             const rand = Math.random() * 100;
             let cumulative = 0;
-
+            
             for (let item of caseData.items) {
                 cumulative += item.chance;
                 if (rand < cumulative) return item;
@@ -1070,20 +1447,20 @@
         function showBattleRoom(roomId, status, caseData) {
             mainView.classList.add('hidden');
             battleRoom.classList.add('active');
-
+            
             battleTitle.textContent = `⚔️ БАТЛ · ${caseData.emoji} ${caseData.name}`;
-
+            
             if (caseData.isFree) {
                 battleType.innerHTML = '<span class="test-badge">🎯 ТЕСТОВЫЙ РЕЖИМ (бесплатно)</span>';
             } else {
                 battleType.innerHTML = '';
             }
-
+            
             battleStatus.textContent = status === 'waiting' ? '⏳ Ожидание игрока...' : '🎲 Подготовка...';
-
+            
             player1Name.textContent = `ВЫ (${userName})`;
             player2Name.textContent = status === 'waiting' ? 'Ожидание...' : 'СОПЕРНИК';
-
+            
             player1Gift.textContent = '❓';
             player1Value.textContent = '-';
             player2Gift.textContent = '❓';
@@ -1104,27 +1481,26 @@
         // Загрузка комнат
         async function loadRooms() {
             roomsList.innerHTML = '<div class="loading-spinner">⏳ Загрузка...</div>';
-
+            
             try {
                 const snapshot = await database.ref('rooms')
                     .orderByChild('status')
                     .equalTo('waiting')
                     .limitToLast(10)
                     .once('value');
-
+                
                 const rooms = snapshot.val();
-
+                
                 if (!rooms || Object.keys(rooms).length === 0) {
                     roomsList.innerHTML = '<div class="no-rooms">😢 Нет активных комнат</div>';
                     return;
                 }
 
                 roomsList.innerHTML = '';
-
-                // Сортируем по времени создания (новые сверху)
+                
                 const sortedRooms = Object.entries(rooms)
                     .sort(([,a], [,b]) => b.createdAt - a.createdAt);
-
+                
                 for (let [id, room] of sortedRooms) {
                     const caseData = CASES[room.caseType];
                     const roomEl = document.createElement('div');
@@ -1133,8 +1509,8 @@
                         <div class="room-info">
                             <div class="room-creator">${room.creatorName}</div>
                             <div class="room-details">
-                                ${caseData.emoji} ${caseData.name} ·
-                                ${room.isFree ? 'БЕСПЛАТНО' : room.betAmount + ' TON'} ·
+                                ${caseData.emoji} ${caseData.name} · 
+                                ${room.isFree ? 'БЕСПЛАТНО' : room.betAmount + ' TON'} · 
                                 ${Math.floor((Date.now() - room.createdAt) / 60000)} мин назад
                             </div>
                         </div>
@@ -1142,16 +1518,16 @@
                             ${room.isFree ? 'ТЕСТ' : 'ВОЙТИ'}
                         </div>
                     `;
-
+                    
                     roomEl.onclick = async () => {
                         if (!room.isFree && !walletConnected) {
                             showMessage('❌ Подключите кошелек');
                             return;
                         }
-
+                        
                         await joinRoom(id, room);
                     };
-
+                    
                     roomsList.appendChild(roomEl);
                 }
             } catch (error) {
@@ -1170,7 +1546,7 @@
 
         createBtn.onclick = async () => {
             const caseData = CASES[selectedCase];
-
+            
             if (!caseData.isFree && !walletConnected) {
                 showMessage('❌ Подключите кошелек');
                 return;
@@ -1181,14 +1557,11 @@
                 return;
             }
 
-            // Проверяем, есть ли свободная комната
             const availableRoom = await findAvailableRoom();
-
+            
             if (availableRoom) {
-                // Если есть, подключаемся
                 await joinRoom(availableRoom.id, availableRoom);
             } else {
-                // Если нет, создаем новую
                 if (!caseData.isFree) {
                     const success = await sendTransaction(caseData.price);
                     if (!success) return;
@@ -1212,10 +1585,11 @@
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
         renderCases();
         loadRooms();
+        loadHistory();
         updateUI();
+        updateStats();
         initTonConnect();
 
-        // Обновляем список комнат каждые 10 секунд
         setInterval(loadRooms, 10000);
     </script>
 </body>
