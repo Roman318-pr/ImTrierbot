@@ -1300,9 +1300,11 @@
         }
 
         // Обновление UI комнаты
+               
         function updateRoomUI(room) {
             if (!room) return;
 
+            // Обновляем имена игроков если они есть
             if (room.players && room.players.length > 0) {
                 if (room.players[0] && room.players[0].id === userId) {
                     player2Name.textContent = room.players[1]?.name || 'СОПЕРНИК';
@@ -1319,53 +1321,51 @@
             } else if (room.status === 'playing') {
                 battleStatus.innerHTML = '⚔️ Битва началась...';
             } else if (room.status === 'finished') {
+                // Если комната уже завершена, просто показываем результаты из Firebase
+                // (для случая перезагрузки страницы)
                 if (room.results) {
-                    if (room.results[room.players[0]?.id]) {
+                    if (room.players[0] && room.results[room.players[0].id]) {
                         player1Gift.textContent = room.results[room.players[0].id].emoji;
                         player1Value.textContent = '⭐ ' + room.results[room.players[0].id].value;
                     }
                     
-                    if (room.results[room.players[1]?.id]) {
+                    if (room.players[1] && room.results[room.players[1].id]) {
                         player2Gift.textContent = room.results[room.players[1].id].emoji;
                         player2Value.textContent = '⭐ ' + room.results[room.players[1].id].value;
                     }
                 }
                 
-                let resultText = '';
-                let gameResult = '';
-                
-                if (room.winner === userId) {
-                    resultText = '🏆 ВЫ ПОБЕДИЛИ!';
-                    gameResult = 'win';
-                    if (!room.isFree) {
-                        resultText += ' +' + (room.betAmount * 2) + ' TON';
+                // Не показываем результат повторно, если он уже был показан
+                if (battleStatus.innerHTML.includes('Открываем кейсы') || 
+                    battleStatus.innerHTML.includes('spinner')) {
+                    let resultText = '';
+                    if (room.winner === userId) {
+                        resultText = '🏆 ВЫ ПОБЕДИЛИ!';
+                        if (!room.isFree) {
+                            resultText += ' +' + (room.betAmount * 2) + ' TON';
+                        }
+                    } else if (room.winner === 'draw') {
+                        resultText = '🤝 НИЧЬЯ!';
+                        if (!room.isFree) {
+                            resultText += ' Возврат ' + room.betAmount + ' TON';
+                        }
+                    } else if (room.winner && room.winner !== userId) {
+                        resultText = '😢 ВЫ ПРОИГРАЛИ';
                     }
-                    createConfetti();
-                } else if (room.winner === 'draw') {
-                    resultText = '🤝 НИЧЬЯ!';
-                    gameResult = 'draw';
-                    if (!room.isFree) {
-                        resultText += ' Возврат ' + room.betAmount + ' TON';
-                    }
-                } else if (room.winner && room.winner !== userId) {
-                    resultText = '😢 ВЫ ПРОИГРАЛИ';
-                    gameResult = 'loss';
+                    battleStatus.innerHTML = resultText;
                 }
-                
-                battleStatus.innerHTML = resultText;
-                
-                // Сохраняем в историю
-                saveGameToHistory(room, gameResult);
             }
         }
 
         // Начало батла
         async function startBattle(room) {
-            battleStatus.innerHTML = '<div class="spinner"></div>Генерируем результаты...';
+            battleStatus.innerHTML = '<div class="spinner"></div>🎲 Открываем кейсы...';
 
+            // Генерируем результаты ТОЛЬКО ЗДЕСЬ, один раз
             const player1Item = getRandomItem(room.caseType);
             const player2Item = getRandomItem(room.caseType);
 
+            // Определяем победителя
             let winner = '';
             if (player1Item.value > player2Item.value) {
                 winner = room.players[0].id;
@@ -1375,59 +1375,61 @@
                 winner = 'draw';
             }
 
+            // Сохраняем результаты в Firebase
             await database.ref('rooms/' + room.id).update({
                 status: 'finished',
                 results: {
                     [room.players[0].id]: {
                         item: player1Item,
                         value: player1Item.value,
-                        emoji: player1Item.emoji
+                        emoji: player1Item.emoji,
+                        name: player1Item.name
                     },
                     [room.players[1].id]: {
                         item: player2Item,
                         value: player2Item.value,
-                        emoji: player2Item.emoji
+                        emoji: player2Item.emoji,
+                        name: player2Item.name
                     }
                 },
                 winner: winner,
                 finishedAt: Date.now()
             });
 
-            battleStatus.innerHTML = '🎲 Открываем кейсы...';
-            
-            setTimeout(async () => {
-                const snapshot = await database.ref('rooms/' + room.id).once('value');
-                const updatedRoom = snapshot.val();
+            // Показываем результаты сразу (не ждем обновления из Firebase)
+            setTimeout(() => {
+                // Показываем результаты для каждого игрока
+                player1Gift.textContent = player1Item.emoji;
+                player1Value.textContent = '⭐ ' + player1Item.value;
+                player2Gift.textContent = player2Item.emoji;
+                player2Value.textContent = '⭐ ' + player2Item.value;
+
+                let resultText = '';
+                let gameResult = '';
                 
-                if (updatedRoom && updatedRoom.results) {
-                    if (updatedRoom.results[room.players[0].id]) {
-                        player1Gift.textContent = updatedRoom.results[room.players[0].id].emoji;
-                        player1Value.textContent = '⭐ ' + updatedRoom.results[room.players[0].id].value;
+                if (winner === userId) {
+                    resultText = '🏆 ВЫ ПОБЕДИЛИ!';
+                    gameResult = 'win';
+                    if (!room.isFree) {
+                        resultText += ' +' + (room.betAmount * 2) + ' TON';
                     }
-                    
-                    if (updatedRoom.results[room.players[1].id]) {
-                        player2Gift.textContent = updatedRoom.results[room.players[1].id].emoji;
-                        player2Value.textContent = '⭐ ' + updatedRoom.results[room.players[1].id].value;
+                    createConfetti();
+                } else if (winner === 'draw') {
+                    resultText = '🤝 НИЧЬЯ!';
+                    gameResult = 'draw';
+                    if (!room.isFree) {
+                        resultText += ' Возврат ' + room.betAmount + ' TON';
                     }
-
-                    let resultText = '';
-                    if (updatedRoom.winner === userId) {
-                        resultText = '🏆 ВЫ ПОБЕДИЛИ!';
-                        if (!room.isFree) {
-                            resultText += ' +' + (room.betAmount * 2) + ' TON';
-                        }
-                    } else if (updatedRoom.winner === 'draw') {
-                        resultText = '🤝 НИЧЬЯ!';
-                        if (!room.isFree) {
-                            resultText += ' Возврат ' + room.betAmount + ' TON';
-                        }
-                    } else if (updatedRoom.winner && updatedRoom.winner !== userId) {
-                        resultText = '😢 ВЫ ПРОИГРАЛИ';
-                    }
-
-                    battleStatus.innerHTML = resultText;
+                } else {
+                    resultText = '😢 ВЫ ПРОИГРАЛИ';
+                    gameResult = 'loss';
                 }
-            }, 1500);
+
+                battleStatus.innerHTML = resultText;
+                
+                // Сохраняем в историю
+                saveGameToHistory(room, gameResult);
+            }, 2000);
         }
 
         // Получение случайного предмета
@@ -1594,3 +1596,4 @@
     </script>
 </body>
 </html>
+
